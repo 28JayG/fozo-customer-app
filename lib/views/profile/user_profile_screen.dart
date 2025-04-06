@@ -1,0 +1,148 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
+import '../../core/constants/colour_constants.dart';
+
+class UserProfileScreen extends StatefulWidget {
+  const UserProfileScreen({super.key});
+
+  @override
+  State<UserProfileScreen> createState() => _UserProfileScreenState();
+}
+
+class _UserProfileScreenState extends State<UserProfileScreen> {
+  final Map<String, bool> _isEditing = {
+    "Name": false,
+    "Mobile": false,
+    "Email": false,
+    // "DOB": false,
+    // "Gender": false,
+  };
+
+  final Map<String, TextEditingController> _controllers = {
+    "Name": TextEditingController(text: "Jane Doe"),
+    "Mobile": TextEditingController(text: "+91 8767865765"),
+    "Email": TextEditingController(text: "janedoe@gmail.com"),
+    // "DOB": TextEditingController(text: "12-12-1996"),
+    // "Gender": TextEditingController(text: "Female"),
+  };
+
+  void _toggleEdit(String field) async {
+    if (_isEditing[field]!) {
+      // Save: Call your API and update logic here
+      final newValue = _controllers[field]!.text;
+
+      // Example placeholder:
+      await Future.delayed(const Duration(milliseconds: 500));
+      print("Saved $field: $newValue");
+    }
+
+    setState(() {
+      _isEditing[field] = !_isEditing[field]!;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColor.backgroundColor,
+      appBar: AppBar(
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.white,
+        title: Text("Your Profile",
+            style: TextStyle(color: Colors.black, fontSize: 16.sp)),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black, size: 20.sp),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ..._controllers.keys.map((field) => Padding(
+                  padding: EdgeInsets.only(bottom: 16.h),
+                  child: _buildProfileField(
+                    label: field,
+                    controller: _controllers[field]!,
+                    isEditing: _isEditing[field]!,
+                    onToggleEdit: () => _toggleEdit(field),
+                  ),
+                )),
+            SizedBox(height: 30.h),
+            SizedBox(
+              width: double.infinity,
+              height: 50.h,
+              child: ElevatedButton(
+                onPressed: null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey.shade300,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                ),
+                child: Text(
+                  "Update Profile",
+                  style:
+                      TextStyle(fontSize: 16.sp, color: Colors.grey.shade600),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileField({
+    required String label,
+    required TextEditingController controller,
+    required bool isEditing,
+    required VoidCallback onToggleEdit,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TextStyle(fontSize: 14.sp, color: Colors.black87)),
+        SizedBox(height: 6.h),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 14.h),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8.r),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: isEditing
+                    ? TextFormField(
+                        controller: controller,
+                        style: TextStyle(fontSize: 14.sp),
+                        decoration:
+                            const InputDecoration.collapsed(hintText: ""),
+                      )
+                    : Text(
+                        controller.text,
+                        style:
+                            TextStyle(fontSize: 14.sp, color: Colors.black87),
+                      ),
+              ),
+              GestureDetector(
+                onTap: onToggleEdit,
+                child: Text(
+                  isEditing ? "Save" : "Change",
+                  style:
+                      TextStyle(fontSize: 14.sp, color: AppColor.buttonColor),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}

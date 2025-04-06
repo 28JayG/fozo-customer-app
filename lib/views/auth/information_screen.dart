@@ -1,0 +1,223 @@
+
+
+// information_screen.dart
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fozo_customer_app/core/constants/colour_constants.dart';
+import 'package:fozo_customer_app/views/auth/map_location_screen.dart';
+
+import '../../data/registration_user_model.dart';
+import '../../utils/http/api.dart';
+import 'login_screen.dart';
+// ^ import the file we created
+
+
+
+class InformationScreen extends StatefulWidget {
+  final String phoneNumber; // <-- phone from OTP
+  final String firebaseUid; // <-- user.uid from OTP
+  final String idToken; // <-- user.uid from OTP
+
+  const InformationScreen({
+    super.key,
+    required this.phoneNumber,
+    required this.firebaseUid,
+    required this.idToken,
+  });
+
+  @override
+  State<InformationScreen> createState() => _InformationScreenState();
+}
+
+class _InformationScreenState extends State<InformationScreen> {
+  final _nameController = TextEditingController();
+
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  Future<void> _saveUserInfo() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final name = _nameController.text.trim();
+      if (name.isEmpty) {
+        throw Exception("Name cannot be empty");
+      }
+
+      // final idToken = await FirebaseAuth.instance.currentUser?.getIdToken() ?? '';
+
+      // Call the registerUser service
+//       final res = await ApiService.postRequest("auth/firebase",
+// {
+//           'idToken': widget.idToken,
+//           'fullName': name,
+//           'contactNumber': widget.phoneNumber,
+//           // 'contactNumber': "44447774458",
+//           'profileImage': "Pseudo Image",
+//           'address': '', // if you want an address, pass it here
+//           }
+//       );
+      // final result = await RegisterUserService.registerUser(
+      //   name: name,
+      //   phoneNumber: widget.phoneNumber,
+      //   firebaseUid: widget.firebaseUid,
+      // );
+
+      // If successful, we can navigate to next screen
+      // or show a success message
+      // debugPrint('Registration success: $res');
+
+      // Move to the map location screen
+      if (!mounted) return;
+
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AddDeliveryLocationScreen(
+              phoneNumber:  widget.phoneNumber,
+              firebaseUid:  widget.firebaseUid,
+              idToken: widget.idToken,
+            name: name,
+          ),
+        ),
+      );
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColor.backgroundColor,
+      appBar: AppBar(
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => LoginScreen(),
+              ),
+            );
+
+          },
+        ),
+        title: Text(
+          "Information",
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 20.sp,
+          ),
+        ),
+      ),
+      body: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 20.w),
+        child: Column(
+          children: [
+            SizedBox(height: 40.h),
+
+            /// Heading
+            Text(
+              "Tell us a bit about you",
+              style: TextStyle(
+                fontSize: 22.sp,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 16.h),
+
+            /// Secondary Label
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "What should we call you?",
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+            SizedBox(height: 8.h),
+
+            /// Name TextField
+            TextField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                hintText: "James Brown",
+                prefixIcon: Icon(Icons.person_outline, size: 24.sp),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+              ),
+            ),
+
+            // Show any error from registration
+            if (_errorMessage != null) ...[
+              SizedBox(height: 16.h),
+              Text(
+                _errorMessage!,
+                style: TextStyle(color: Colors.red),
+              ),
+            ],
+
+            const Spacer(),
+
+            /// Continue Button
+            SizedBox(
+              width: double.infinity,
+              height: 56.h,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green.shade900,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                ),
+                onPressed: _isLoading
+                    ? null
+                    : () {
+                        _saveUserInfo(); // call the API to store info
+                      },
+                child: _isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : Text(
+                        "Continue",
+                        style: TextStyle(
+                          fontSize: 18.sp,
+                          color: Colors.white,
+                        ),
+                      ),
+              ),
+            ),
+            SizedBox(height: 24.h),
+          ],
+        ),
+      ),
+    );
+  }
+}
