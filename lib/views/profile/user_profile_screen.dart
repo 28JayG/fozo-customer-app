@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../core/constants/colour_constants.dart';
+import '../../utils/helper/shared_preferences_helper.dart';
+import '../../utils/http/api.dart';
 
 class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({super.key});
@@ -11,26 +15,67 @@ class UserProfileScreen extends StatefulWidget {
 }
 
 class _UserProfileScreenState extends State<UserProfileScreen> {
+  Map userLookup = {};
+  Map userRes = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _getDetails();
+  }
+
+  Future<void> _getDetails() async {
+    final res = await ApiService.getRequest("profile/customer");
+    String? userLookUpString =
+        await SharedPreferencesHelper.getString("userLookup");
+    userLookup = jsonDecode(userLookUpString!);
+    print(userLookUpString);
+    print(userLookup);
+    print(res);
+    print("userLookup");
+
+    setState(() {
+      userRes = res;
+      _controllers = {
+        "Name": TextEditingController(text: res["full_name"]),
+        "Mobile":
+            TextEditingController(text: userLookup["user"]["contact_number"]),
+        "Email": TextEditingController(text: userLookup["user"]["email"]),
+        "Address": TextEditingController(text: res["address"]),
+      };
+    });
+  }
+
   final Map<String, bool> _isEditing = {
     "Name": false,
     "Mobile": false,
     "Email": false,
+    "Address": false,
     // "DOB": false,
     // "Gender": false,
   };
 
-  final Map<String, TextEditingController> _controllers = {
-    "Name": TextEditingController(text: "Jane Doe"),
-    "Mobile": TextEditingController(text: "+91 8767865765"),
-    "Email": TextEditingController(text: "janedoe@gmail.com"),
-    // "DOB": TextEditingController(text: "12-12-1996"),
-    // "Gender": TextEditingController(text: "Female"),
+  Map<String, TextEditingController> _controllers = {
+    "Name": TextEditingController(text: ""),
+    "Mobile": TextEditingController(text: ""),
+    "Email": TextEditingController(text: ""),
+    "Address": TextEditingController(text: ""),
   };
 
   void _toggleEdit(String field) async {
     if (_isEditing[field]!) {
       // Save: Call your API and update logic here
       final newValue = _controllers[field]!.text;
+
+      String sendKey = "n/a";
+
+      if (field == "Address") sendKey = "address";
+      if (field == "Name") sendKey = "full_name";
+      final res = await ApiService.putRequest(
+          "profile/customer/" + userRes["customer_id"].toString(),
+          {sendKey: newValue});
+
+      print(res);
 
       // Example placeholder:
       await Future.delayed(const Duration(milliseconds: 500));
@@ -131,14 +176,16 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             TextStyle(fontSize: 14.sp, color: Colors.black87),
                       ),
               ),
-              GestureDetector(
-                onTap: onToggleEdit,
-                child: Text(
-                  isEditing ? "Save" : "Change",
-                  style:
-                      TextStyle(fontSize: 14.sp, color: AppColor.buttonColor),
-                ),
-              ),
+              (label == "Address" || label == "Name")
+                  ? GestureDetector(
+                      onTap: onToggleEdit,
+                      child: Text(
+                        isEditing ? "Save" : "Change",
+                        style: TextStyle(
+                            fontSize: 14.sp, color: AppColor.buttonColor),
+                      ),
+                    )
+                  : SizedBox(height: 0, width: 0),
             ],
           ),
         ),

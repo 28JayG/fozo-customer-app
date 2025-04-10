@@ -6,11 +6,13 @@ import 'package:fozo_customer_app/core/constants/colour_constants.dart';
 class PaymentMethodPage extends StatefulWidget {
   final double totalPayPrice;
   final String cartId;
+  final Map selectAddress;
 
   const PaymentMethodPage({
     super.key,
     required this.cartId,
     required this.totalPayPrice,
+    required this.selectAddress,
   });
   @override
   State<PaymentMethodPage> createState() => _PaymentMethodPageState();

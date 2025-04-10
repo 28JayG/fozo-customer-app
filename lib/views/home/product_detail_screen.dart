@@ -44,21 +44,26 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
   Future<void> getMyData() async {
     final resOutlate = await ApiService.getRequest(
         "Search/Searchmysterybagwithrestaurantid?UserAddress=${widget.myAddress}&Page=1&PageSize=10&RestaurantId=${widget.restaurantId}");
+    print(resOutlate);
+    print("resOutlate");
 
     setState(() {
       resData = resOutlate;
       resResData = resOutlate["restaurants"] is List &&
-              resOutlate["restaurants"]!.isNotEmpty == true
-          ? resData["restaurants"]![0]
+              resOutlate["restaurants"].isNotEmpty == true
+          ? resData["restaurants"][0]
           : {};
+
+      print(resResData);
+      print("resResData");
     });
   }
 
   void addToCart(Map selectItem) {
     int index =
-        myCart.indexWhere((item) => item["itemName"] == selectItem["size"]);
+        myCart.indexWhere((item) => item["itemName"] == selectItem["packsize"]);
     if (index == -1) {
-      myCart.add({"itemName": selectItem["size"], "cart": 1});
+      myCart.add({"itemName": selectItem["packsize"], "cart": 1});
     } else {
       myCart[index]["cart"] += 1;
     }
@@ -68,7 +73,7 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
 
   void removeFromCart(Map selectItem) {
     int index =
-        myCart.indexWhere((item) => item["itemName"] == selectItem["size"]);
+        myCart.indexWhere((item) => item["itemName"] == selectItem["packsize"]);
     if (index != -1) {
       myCart[index]["cart"] -= 1;
       if (myCart[index]["cart"] <= 0) {
@@ -80,18 +85,24 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
   }
 
   void totalPriceCal() {
+    print(1111);
+    print(myCart);
+    print("{totalPrice, totalBag}");
+
     totalPrice = 0;
     totalBag = 0;
     for (int i = 0; i < myCart.length; i++) {
       String itemName = myCart[i]["itemName"];
       int cartCount = myCart[i]["cart"];
-      int index =
-          resData["restaurants"].indexWhere((item) => item["size"] == itemName);
+
+      int index = resData["restaurants"]
+          .indexWhere((item) => item["packsize"] == itemName);
       double priceTag = resData["restaurants"][index]["discountedPrice"];
       totalPrice = totalPrice + (cartCount * priceTag);
       totalBag = totalBag + cartCount;
     }
     print({totalPrice, totalBag});
+    print("{totalPrice, totalBag}");
     setState(() {});
   }
 
@@ -172,75 +183,6 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
                           const Icon(Icons.error),
                     ),
                   ),
-
-                  // // Back arrow (top-left)
-                  // Positioned(
-                  //   top: 12.h,
-                  //   left: 12.w,
-                  //   child: GestureDetector(
-                  //     onTap: () => Navigator.pop(context),
-                  //     child: Container(
-                  //       padding: EdgeInsets.all(6.r),
-                  //       decoration: BoxDecoration(
-                  //         color: Colors.black.withOpacity(0.5),
-                  //         shape: BoxShape.circle,
-                  //       ),
-                  //       child: Icon(
-                  //         Icons.arrow_back,
-                  //         color: Colors.white,
-                  //         size: 20.sp,
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
-                  //
-                  // // Icons (top-right)
-                  // Positioned(
-                  //   top: 12.h,
-                  //   right: 12.w,
-                  //   child: Row(
-                  //     children: [
-                  //       // Share icon
-                  //       GestureDetector(
-                  //         onTap: () {
-                  //           // Implement share logic
-                  //         },
-                  //         child: Container(
-                  //           padding: EdgeInsets.all(6.r),
-                  //           decoration: BoxDecoration(
-                  //             color: Colors.black.withOpacity(0.5),
-                  //             shape: BoxShape.circle,
-                  //           ),
-                  //           child: Icon(
-                  //             Icons.ios_share,
-                  //             color: Colors.white,
-                  //             size: 20.sp,
-                  //           ),
-                  //         ),
-                  //       ),
-                  //       SizedBox(width: 10.w),
-                  //
-                  //       // Bookmark icon
-                  //       GestureDetector(
-                  //         onTap: () {
-                  //           // Implement bookmark/favorite logic
-                  //         },
-                  //         child: Container(
-                  //           padding: EdgeInsets.all(6.r),
-                  //           decoration: BoxDecoration(
-                  //             color: Colors.black.withOpacity(0.5),
-                  //             shape: BoxShape.circle,
-                  //           ),
-                  //           child: Icon(
-                  //             Icons.bookmark_border,
-                  //             color: Colors.white,
-                  //             size: 20.sp,
-                  //           ),
-                  //         ),
-                  //       ),
-                  //     ],
-                  //   ),
-                  // ),
                 ],
               ),
 
@@ -408,7 +350,7 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
                       // Use a shrinkWrap to fit inside SingleChildScrollView
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: resData["restaurants"]!.length,
+                      itemCount: (resData["restaurants"] as List?)?.length ?? 0,
                       separatorBuilder: (_, __) => SizedBox(height: 12.h),
                       itemBuilder: (context, index) {
                         final item = resData["restaurants"][index];
@@ -771,7 +713,7 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item["size"] ?? "",
+                  item["packsize"] ?? "",
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.bold,
@@ -798,7 +740,7 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
           ),
 
           // Right side: either "ADD +" or quantity selector
-          myCart.firstWhere((e) => e["itemName"] == item["size"],
+          myCart.firstWhere((e) => e["itemName"] == item["packsize"],
                       orElse: () => {"cart": 0})["cart"] ==
                   0
               ? _buildAddButton(item)
@@ -868,7 +810,7 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
           // quantity
           Text(
             myCart
-                .firstWhere((e) => e["itemName"] == item["size"],
+                .firstWhere((e) => e["itemName"] == item["packsize"],
                     orElse: () => {"cart": 0})["cart"]
                 .toString(),
             style: TextStyle(

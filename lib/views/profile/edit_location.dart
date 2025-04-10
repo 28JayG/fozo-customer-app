@@ -11,30 +11,22 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 
 import '../../core/constants/colour_constants.dart';
-import '../../utils/helper/shared_preferences_helper.dart';
-import '../../utils/http/api.dart';
-import '../home/home_screen.dart';
 
-class AddDeliveryLocationScreen extends StatefulWidget {
-  final String phoneNumber; // <-- phone from OTP
-  final String firebaseUid; // <-- user.uid from OTP
-  final String idToken; // <-- user.uid from OTP
-  final String name; // <-- user.uid from OTP
+class EditDeliveryLocationScreen extends StatefulWidget {
+  final String addressId;
 
-  const AddDeliveryLocationScreen({
+  const EditDeliveryLocationScreen({
     super.key,
-    required this.phoneNumber,
-    required this.firebaseUid,
-    required this.idToken,
-    required this.name,
+    required this.addressId,
   });
 
   @override
-  State<AddDeliveryLocationScreen> createState() =>
-      _AddDeliveryLocationScreenState();
+  State<EditDeliveryLocationScreen> createState() =>
+      _EditDeliveryLocationScreenState();
 }
 
-class _AddDeliveryLocationScreenState extends State<AddDeliveryLocationScreen> {
+class _EditDeliveryLocationScreenState
+    extends State<EditDeliveryLocationScreen> {
   List searchList = [];
 
   final Completer<GoogleMapController> _controller = Completer();
@@ -339,39 +331,7 @@ class _AddDeliveryLocationScreenState extends State<AddDeliveryLocationScreen> {
                           ),
                         ),
                         onPressed: () async {
-                          print({
-                            "idToken": widget.idToken,
-                            "fullName": widget.name,
-                            "contactNumber": widget.phoneNumber,
-                            "address": selectPlaceAddress,
-                            "profileImage": "https://example.com/image.jpg"
-                          });
-                          print("object");
-
-                          final res = await ApiService.postRequest(
-                              "auth/register/customer", {
-                            "idToken": widget.idToken,
-                            "fullName": widget.name,
-                            "contactNumber": widget.phoneNumber,
-                            "address": selectPlaceAddress,
-                            "profileImage": "https://example.com/image.jpg"
-                          });
-
-                          if (res["role"] == "Customer") {
-                            res["user"] = res;
-                            // Convert JSON to string and save
-                            String actionString = jsonEncode(res);
-                            await SharedPreferencesHelper.saveString(
-                                'userLookup',
-                                actionString); // Save a string value
-
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => FozoHomeScreen(),
-                              ),
-                            );
-                          }
+                          // provider.confirmLocation();
                         },
                         child: Text(
                           "Confirm",

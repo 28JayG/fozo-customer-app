@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fozo_customer_app/core/constants/colour_constants.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../utils/http/api.dart';
 import '../payment/payment_screen.dart';
 
 class CheckoutPage extends StatefulWidget {
@@ -31,12 +32,30 @@ class _CheckoutPageState extends State<CheckoutPage> {
   var uuid = Uuid();
   String cartId = "";
 
+  List _addresses = [];
+  Map _selectAddress = {};
+
+  Future<void> _getData() async {
+    final resAddress = await ApiService.getRequest("address");
+    _addresses = resAddress["data"];
+    _selectAddress = _addresses.firstWhere(
+      (addr) => addr["isDefault"] == true,
+      orElse: () => {},
+    );
+
+    print(_selectAddress);
+    print("_selectAddress");
+
+    setState(() {}); // Refresh the UI if inside a StatefulWidget
+  }
+
   @override
   void initState() {
     super.initState();
     // Fetch data once the widget is initialized
     cartId = uuid.v4();
     getMyData();
+    _getData();
   }
 
   void getMyData() {
@@ -46,7 +65,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       String itemName = widget.myCart[i]["itemName"];
       int cartCount = widget.myCart[i]["cart"];
       int index = widget.resData["restaurants"]
-          .indexWhere((item) => item["size"] == itemName);
+          .indexWhere((item) => item["packsize"] == itemName);
       double priceTag = widget.resData["restaurants"][index]["discountedPrice"];
       totalItemPrice = totalItemPrice + (cartCount * priceTag);
       totalBag = totalBag + cartCount;
@@ -56,9 +75,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   void addToCart(Map selectItem) {
     int index = widget.myCart
-        .indexWhere((item) => item["itemName"] == selectItem["size"]);
+        .indexWhere((item) => item["itemName"] == selectItem["packsize"]);
     if (index == -1) {
-      widget.myCart.add({"itemName": selectItem["size"], "cart": 1});
+      widget.myCart.add({"itemName": selectItem["packsize"], "cart": 1});
     } else {
       widget.myCart[index]["cart"] += 1;
     }
@@ -68,7 +87,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   void removeFromCart(Map selectItem) {
     int index = widget.myCart
-        .indexWhere((item) => item["itemName"] == selectItem["size"]);
+        .indexWhere((item) => item["itemName"] == selectItem["packsize"]);
     if (index != -1) {
       widget.myCart[index]["cart"] -= 1;
       if (widget.myCart[index]["cart"] <= 0) {
@@ -81,10 +100,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   @override
   Widget build(BuildContext context) {
-    // final bagProvider = Provider.of<BagProvider>(context, listen: true);
-
-    // Example: We'll assume a fixed "deliveryCharge" and "handlingCharge"
-    // If you have them dynamic, fetch from provider or an API.
     final deliveryCharge = 50;
     final handlingCharge = 35;
 
@@ -151,12 +166,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ),
               SizedBox(height: 10.h),
 
-              // // CART ITEMS LIST
-              // ...bagProvider.items.values.map((bagItem) {
-              //   // Each cart item row
-              //   return _buildCartItemRow(context, bagItem);
-              // }).toList(),
-
               ListView.separated(
                 // Use a shrinkWrap to fit inside SingleChildScrollView
                 shrinkWrap: true,
@@ -172,66 +181,282 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
               SizedBox(height: 20.h),
 
+              Container(
+                padding: EdgeInsets.all(12.r),
+                margin: EdgeInsets.only(bottom: 8.h),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 2.r,
+                      offset: Offset(0, 1.h),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.location_on,
+                          color: Colors.green.shade900,
+                          size: 18.sp,
+                        ),
+                        SizedBox(width: 6.w),
+
+                        // Wrap the whole Column with Expanded instead
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Delivery Address",
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              SizedBox(height: 8.h),
+                              Text(
+                                "${_selectAddress["name"]} | ${_selectAddress["apartment"]}, ${_selectAddress["city"]}, ${_selectAddress["state"]}, ${_selectAddress["postalCode"]} | Recipient Name: ${_selectAddress["recipientName"]} | Phone No: ${_selectAddress["phoneNumber"]}",
+                                style: TextStyle(
+                                  fontSize: 13.sp,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        SizedBox(width: 6.w),
+
+                        GestureDetector(
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return Dialog(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
+                                  child: Container(
+                                    padding: EdgeInsets.all(16),
+                                    constraints: BoxConstraints(
+                                        maxHeight:
+                                            500), // scrollable if more addresses
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          "Select Delivery Address",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 18,
+                                          ),
+                                        ),
+                                        SizedBox(height: 12),
+                                        Expanded(
+                                          child: ListView.builder(
+                                            itemCount: _addresses.length,
+                                            itemBuilder: (context, index) {
+                                              final item = _addresses[index];
+                                              return GestureDetector(
+                                                onTap: () {
+                                                  setState(() {
+                                                    _selectAddress = item;
+                                                  });
+                                                  Navigator.pop(
+                                                      context); // close popup
+                                                },
+                                                child: Card(
+                                                  margin: EdgeInsets.symmetric(
+                                                      vertical: 8),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                    side: BorderSide(
+                                                      color:
+                                                          item["isDefault"] ==
+                                                                  true
+                                                              ? Colors.green
+                                                              : Colors.grey
+                                                                  .shade300,
+                                                      width: 1.5,
+                                                    ),
+                                                  ),
+                                                  elevation: 3,
+                                                  child: Padding(
+                                                    padding: EdgeInsets.all(12),
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Row(
+                                                          children: [
+                                                            Icon(
+                                                              Icons.home,
+                                                              color: Colors
+                                                                  .green
+                                                                  .shade800,
+                                                            ),
+                                                            SizedBox(width: 8),
+                                                            Text(
+                                                              item["name"] ??
+                                                                  "",
+                                                              style: TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                fontSize: 16,
+                                                              ),
+                                                            ),
+                                                            if (item[
+                                                                    "isDefault"] ==
+                                                                true) ...[
+                                                              SizedBox(
+                                                                  width: 6),
+                                                              Container(
+                                                                padding: EdgeInsets
+                                                                    .symmetric(
+                                                                        horizontal:
+                                                                            8,
+                                                                        vertical:
+                                                                            4),
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  color: Colors
+                                                                      .green
+                                                                      .shade50,
+                                                                  border: Border
+                                                                      .all(
+                                                                    color: Colors
+                                                                        .green,
+                                                                  ),
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              8),
+                                                                ),
+                                                                child: Text(
+                                                                  "Default",
+                                                                  style:
+                                                                      TextStyle(
+                                                                    color: Colors
+                                                                        .green
+                                                                        .shade800,
+                                                                    fontSize:
+                                                                        12,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w500,
+                                                                  ),
+                                                                ),
+                                                              )
+                                                            ]
+                                                          ],
+                                                        ),
+                                                        SizedBox(height: 6),
+                                                        Text(
+                                                          "${item["apartment"]}, ${item["streetAddress"]}, ${item["city"]}, ${item["state"]} - ${item["postalCode"]}",
+                                                          style: TextStyle(
+                                                            fontSize: 14,
+                                                            color: Colors
+                                                                .grey[700],
+                                                          ),
+                                                        ),
+                                                        SizedBox(height: 4),
+                                                        Text(
+                                                          "Phone: ${item["phoneNumber"]}",
+                                                          style: TextStyle(
+                                                            fontSize: 13,
+                                                            color: Colors
+                                                                .grey[600],
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                          child: Text(
+                            "Change",
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              color: Color(0xFF1C4D1E),
+                              fontWeight: FontWeight.bold, // 👈 Add this
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 6.h),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 200.w,
+                          height: 1.h,
+                          color: Colors.grey.shade300,
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 6.h),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.lock_clock,
+                          color: Colors.green.shade900,
+                          size: 18.sp,
+                        ),
+                        SizedBox(width: 6.w),
+
+                        // Wrap the whole Column with Expanded instead
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Delivered by 10-11 PM",
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              SizedBox(height: 8.h),
+                              Text(
+                                "You will receive 20 minutes before the delivery time.",
+                                style: TextStyle(
+                                  fontSize: 13.sp,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
               // Delivery Address
-              Text(
-                "Delivery Address",
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              SizedBox(height: 8.h),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // For example, an icon or address icon
-                  Icon(
-                    Icons.location_on,
-                    color: Colors.green.shade900,
-                    size: 18.sp,
-                  ),
-                  SizedBox(width: 6.w),
-                  Expanded(
-                    child: Text(
-                      "Creative Residency | 24th Main Rd, ITI Layout",
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      // Implement address change logic
-                    },
-                    child: Text(
-                      "Change",
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        color: Colors.blue,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 4.h),
-              Text(
-                "You will receive 20 minutes before the delivery time.",
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-              SizedBox(height: 4.h),
-              Text(
-                "Delivered by 10-11 PM",
-                style: TextStyle(
-                  fontSize: 13.sp,
-                  color: Colors.grey.shade700,
-                ),
-              ),
 
               SizedBox(height: 20.h),
 
@@ -288,6 +513,26 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 height: 48.h,
                 child: ElevatedButton(
                   onPressed: () {
+                    if (_selectAddress.isEmpty) {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: Text("No Address Selected"),
+                            content: Text(
+                                "Please select an address before confirming."),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text("OK"),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                      return;
+                    }
+
                     print({
                       widget.restaurantId,
                       widget.myAddress,
@@ -297,11 +542,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       handlingCharge,
                       deliveryCharge
                     });
+
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => PaymentMethodPage(
                             cartId: cartId,
+                            selectAddress: _selectAddress,
                             totalPayPrice: totalItemPrice +
                                 handlingCharge +
                                 deliveryCharge),
@@ -359,7 +606,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   // Build each item in the cart
   Widget _buildCartItemRow(item) {
-    int count = widget.myCart.firstWhere((e) => e["itemName"] == item["size"],
+    int count = widget.myCart.firstWhere(
+        (e) => e["itemName"] == item["packsize"],
         orElse: () => {"cart": 0})["cart"];
     if (count == 0) {
       return SizedBox(
@@ -413,7 +661,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 // in your BagItem or you can combine them. For demonstration,
                 // let's show bagItem.title on top and bagItem.description below.
                 Text(
-                  item["size"] ?? "",
+                  item["packsize"] ?? "",
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.bold,

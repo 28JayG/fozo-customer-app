@@ -11,30 +11,19 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 
 import '../../core/constants/colour_constants.dart';
-import '../../utils/helper/shared_preferences_helper.dart';
 import '../../utils/http/api.dart';
-import '../home/home_screen.dart';
 
-class AddDeliveryLocationScreen extends StatefulWidget {
-  final String phoneNumber; // <-- phone from OTP
-  final String firebaseUid; // <-- user.uid from OTP
-  final String idToken; // <-- user.uid from OTP
-  final String name; // <-- user.uid from OTP
-
-  const AddDeliveryLocationScreen({
+class AddNewDeliveryLocationScreen extends StatefulWidget {
+  const AddNewDeliveryLocationScreen({
     super.key,
-    required this.phoneNumber,
-    required this.firebaseUid,
-    required this.idToken,
-    required this.name,
   });
-
   @override
-  State<AddDeliveryLocationScreen> createState() =>
-      _AddDeliveryLocationScreenState();
+  State<AddNewDeliveryLocationScreen> createState() =>
+      _AddNewDeliveryLocationScreenState();
 }
 
-class _AddDeliveryLocationScreenState extends State<AddDeliveryLocationScreen> {
+class _AddNewDeliveryLocationScreenState
+    extends State<AddNewDeliveryLocationScreen> {
   List searchList = [];
 
   final Completer<GoogleMapController> _controller = Completer();
@@ -45,6 +34,7 @@ class _AddDeliveryLocationScreenState extends State<AddDeliveryLocationScreen> {
 // Location & Address states
   LatLng? selectLocation;
   String? selectPlaceAddress;
+  Placemark? place;
 
   Marker? _marker;
 
@@ -99,10 +89,11 @@ class _AddDeliveryLocationScreenState extends State<AddDeliveryLocationScreen> {
       position.longitude,
     );
 
-    Placemark place = placemarks.first;
     setState(() {
+      place = placemarks.first;
+
       selectPlaceAddress =
-          "${place.street}, ${place.locality}, ${place.postalCode}";
+          "${place?.street}, ${place?.locality}, ${place?.postalCode}";
     });
   }
 
@@ -114,28 +105,33 @@ class _AddDeliveryLocationScreenState extends State<AddDeliveryLocationScreen> {
     String address = placeData["formatted_address"];
 
     LatLng newPosition = LatLng(lat, lng);
+    print(placeData);
+    print("placeData");
 
-    // Update everything
-    setState(() {
-      selectLocation = newPosition;
-      selectPlaceAddress = address;
-      _marker = Marker(
-        markerId: MarkerId("selected_place"),
-        position: newPosition,
-        infoWindow: InfoWindow(title: "Selected Place"),
-      );
-    });
+    selectLocation = newPosition;
+    selectPlaceAddress = address;
+    _marker = Marker(
+      markerId: MarkerId("selected_place"),
+      position: newPosition,
+      infoWindow: InfoWindow(title: "Selected Place"),
+    );
 
     // Move camera
     final GoogleMapController controller = await _controller.future;
     controller.animateCamera(CameraUpdate.newLatLng(newPosition));
+
+    // Get human-readable address
+    List<Placemark> placemarks = await placemarkFromCoordinates(
+      lat,
+      lng,
+    );
+
+    place = placemarks.first;
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    // final provider = Provider.of<AddressFormProvider>(context);
-    // Future.microtask(() => provider.init());
-
     return Scaffold(
       backgroundColor: AppColor.backgroundColor,
       appBar: AppBar(
@@ -338,41 +334,7 @@ class _AddDeliveryLocationScreenState extends State<AddDeliveryLocationScreen> {
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                         ),
-                        onPressed: () async {
-                          print({
-                            "idToken": widget.idToken,
-                            "fullName": widget.name,
-                            "contactNumber": widget.phoneNumber,
-                            "address": selectPlaceAddress,
-                            "profileImage": "https://example.com/image.jpg"
-                          });
-                          print("object");
-
-                          final res = await ApiService.postRequest(
-                              "auth/register/customer", {
-                            "idToken": widget.idToken,
-                            "fullName": widget.name,
-                            "contactNumber": widget.phoneNumber,
-                            "address": selectPlaceAddress,
-                            "profileImage": "https://example.com/image.jpg"
-                          });
-
-                          if (res["role"] == "Customer") {
-                            res["user"] = res;
-                            // Convert JSON to string and save
-                            String actionString = jsonEncode(res);
-                            await SharedPreferencesHelper.saveString(
-                                'userLookup',
-                                actionString); // Save a string value
-
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => FozoHomeScreen(),
-                              ),
-                            );
-                          }
-                        },
+                        onPressed: () => _showAddressPopup(context),
                         child: Text(
                           "Confirm",
                           style: TextStyle(
@@ -387,6 +349,169 @@ class _AddDeliveryLocationScreenState extends State<AddDeliveryLocationScreen> {
                 )),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showAddressPopup(BuildContext context) async {
+    // Wait for popup to close
+    await showDialog(
+      context: context,
+      builder: (context) {
+        print(place);
+        return Dialog(
+          child: SingleChildScrollView(
+            child: AddressForm(
+              selectLocation: selectLocation,
+              selectPlaceAddress: selectPlaceAddress,
+              place: place,
+            ),
+          ),
+        );
+      },
+    );
+
+    // After popup closes, navigate to a new screen
+    // Navigator.push(
+    //   context,
+    //   MaterialPageRoute(
+    //     builder: (context) =>
+    //         SelectLocationScreen(), // Replace with your actual screen
+    //   ),
+    // );
+
+    Navigator.pop(context);
+  }
+}
+
+class AddressForm extends StatefulWidget {
+  final LatLng? selectLocation;
+  final String? selectPlaceAddress;
+  final Placemark? place;
+
+  const AddressForm({
+    super.key,
+    required this.selectLocation,
+    required this.selectPlaceAddress,
+    required this.place,
+  });
+
+  @override
+  _AddressFormState createState() => _AddressFormState();
+}
+
+class _AddressFormState extends State<AddressForm> {
+  final _formKey = GlobalKey<FormState>();
+
+  String name = "";
+  String recipientName = "";
+  String? streetAddress = "";
+  String? apartment = "";
+  String? city = "";
+  String? state = "";
+  String? postalCode = "";
+  String? country = "";
+  String phoneNumber = "";
+  String deliveryInstructions = "";
+  bool isDefault = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _getData();
+  }
+
+  void _getData() {
+    print(widget.place);
+    streetAddress = widget.place?.street;
+    city = widget.place?.locality;
+    postalCode = widget.place?.postalCode;
+    country = widget.place?.country;
+    state = widget.place?.administrativeArea;
+    apartment = widget.place?.name;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 350,
+      padding: EdgeInsets.all(16),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Enter Address',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            SizedBox(height: 16),
+            _buildTextField('Label', name, (val) => name = val),
+            _buildTextField(
+                'Recipient Name', recipientName, (val) => recipientName = val),
+            _buildTextField(
+                'Street Address', streetAddress!, (val) => streetAddress = val),
+            _buildTextField('Apartment', apartment!, (val) => apartment = val),
+            _buildTextField('City', city!, (val) => city = val),
+            _buildTextField('State', state!, (val) => state = val),
+            _buildTextField(
+                'Postal Code', postalCode!, (val) => postalCode = val),
+            _buildTextField('Country', country!, (val) => country = val),
+            _buildTextField(
+                'Phone Number', phoneNumber, (val) => phoneNumber = val),
+            _buildTextField('Delivery Instructions', deliveryInstructions,
+                (val) => deliveryInstructions = val),
+            Row(
+              children: [
+                Checkbox(
+                  value: isDefault,
+                  onChanged: (value) => setState(() => isDefault = value!),
+                ),
+                Text("Set as Default"),
+              ],
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () async {
+                if (_formKey.currentState!.validate()) {
+                  Map<String, dynamic> formData = {
+                    "name": name,
+                    "recipientName": recipientName,
+                    "streetAddress": streetAddress,
+                    "apartment": apartment,
+                    "city": city,
+                    "state": state,
+                    "postalCode": postalCode,
+                    "country": country,
+                    "phoneNumber": phoneNumber,
+                    "isDefault": isDefault,
+                    "deliveryInstructions": deliveryInstructions,
+                  };
+
+                  final resOutlate =
+                      await ApiService.postRequest("address", formData);
+                  Navigator.pop(context);
+                }
+              },
+              child: Text('Submit..'),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(
+      String label, String initialValue, Function(String) onChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: TextFormField(
+        initialValue: initialValue,
+        decoration: InputDecoration(
+          labelText: label,
+          border: OutlineInputBorder(),
+        ),
+        onChanged: onChanged,
+        validator: (value) =>
+            value == null || value.isEmpty ? 'Required' : null,
       ),
     );
   }

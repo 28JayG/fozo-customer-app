@@ -1,9 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fozo_customer_app/core/constants/colour_constants.dart';
-import 'package:fozo_customer_app/views/profile/address_book_screen.dart';
 import 'package:fozo_customer_app/views/profile/past_order_screen.dart';
 
+import '../../utils/helper/shared_preferences_helper.dart';
+import '../../utils/http/api.dart';
+import 'address_book_screen.dart';
 import 'user_profile_screen.dart';
 
 class ProfileHomeScreen extends StatefulWidget {
@@ -14,6 +18,26 @@ class ProfileHomeScreen extends StatefulWidget {
 }
 
 class _ProfileHomeScreenState extends State<ProfileHomeScreen> {
+  Map userLookup = {};
+  Map userRes = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _getDetails();
+  }
+
+  Future<void> _getDetails() async {
+    final res = await ApiService.getRequest("profile/customer");
+    String? userLookUpString =
+        await SharedPreferencesHelper.getString("userLookup");
+    userLookup = jsonDecode(userLookUpString!);
+
+    setState(() {
+      userRes = res;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -57,7 +81,8 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> {
                       children: [
                         // Name
                         Text(
-                          "Jane Doe",
+                          // userLookup["user"][""] ?? "",
+                          "",
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.bold,

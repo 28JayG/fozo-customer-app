@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../helper/shared_preferences_helper.dart';
+
 class ApiService {
   static const String baseUrl =
       "https://api.getfozo.in/api/"; // Change this to your API base URL
@@ -13,8 +15,17 @@ class ApiService {
 
       String encodedUrl = Uri.encodeFull('$baseUrl$endpoint');
       print(encodedUrl);
+      print("encodedUrl");
+      print("encodedUrl");
 
-      final response = await http.get(Uri.parse(encodedUrl), headers: _headers);
+      final headers = await _getHeadersGorGetReq();
+      print(headers);
+
+      final response = await http.get(Uri.parse(encodedUrl), headers: headers);
+      final responseJson = jsonDecode(response.body);
+      print(response);
+      print(responseJson);
+      print("responseresponse");
       return _handleResponse(response);
     } catch (e) {
       print('GET Request Error: $e');
@@ -28,14 +39,20 @@ class ApiService {
     try {
       print("Post URL");
       String encodedUrl = Uri.encodeFull('$baseUrl$endpoint');
+      final headers = await _getHeaders();
+
       print(encodedUrl);
 
       print(encodedUrl);
       final response = await http.post(
         Uri.parse(encodedUrl),
-        headers: _headers,
+        headers: headers,
         body: jsonEncode(data),
       );
+      final responseJson = jsonDecode(response.body);
+      print(response);
+      print(responseJson);
+      print("responseresponse");
       return _handleResponse(response);
     } catch (e) {
       print('POST Request Error: $e');
@@ -47,11 +64,15 @@ class ApiService {
   static Future<Map<String, dynamic>> putRequest(
       String endpoint, Map<String, dynamic> data) async {
     try {
+      print("Put URL");
       String encodedUrl = Uri.encodeFull('$baseUrl$endpoint');
+      final headers = await _getHeaders();
+
+      print(encodedUrl);
 
       final response = await http.put(
         Uri.parse(encodedUrl),
-        headers: _headers,
+        headers: headers,
         body: jsonEncode(data),
       );
       return _handleResponse(response);
@@ -65,9 +86,10 @@ class ApiService {
   static Future<Map<String, dynamic>> deleteRequest(String endpoint) async {
     try {
       String encodedUrl = Uri.encodeFull('$baseUrl$endpoint');
+      final headers = await _getHeaders();
 
       final response =
-          await http.delete(Uri.parse(encodedUrl), headers: _headers);
+          await http.delete(Uri.parse(encodedUrl), headers: headers);
       return _handleResponse(response);
     } catch (e) {
       print('DELETE Request Error: $e');
@@ -75,11 +97,43 @@ class ApiService {
     }
   }
 
-  // Common Headers
-  static final Map<String, String> _headers = {
-    'Content-Type': 'application/json',
-    'Accept': '*/*',
-  };
+// Replace this static headers block:
+// static final Map<String, String> _headers = { ... };
+
+  static Future<Map<String, String>> _getHeaders() async {
+    String? userLookUpString =
+        await SharedPreferencesHelper.getString("userLookup");
+
+    String? token;
+    if (userLookUpString != null) {
+      Map userLookup = jsonDecode(userLookUpString);
+      token = userLookup["token"];
+    }
+    print(token);
+
+    return {
+      'Content-Type': 'application/json',
+      'Accept': '*/*',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
+
+  static Future<Map<String, String>> _getHeadersGorGetReq() async {
+    String? userLookUpString =
+        await SharedPreferencesHelper.getString("userLookup");
+
+    String? token;
+    if (userLookUpString != null) {
+      Map userLookup = jsonDecode(userLookUpString);
+      token = userLookup["token"];
+    }
+    print(token);
+
+    return {
+      // 'Accept': '*/*',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
 
   // Handle Response
   static Map<String, dynamic> _handleResponse(http.Response response) {

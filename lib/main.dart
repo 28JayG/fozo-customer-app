@@ -2,15 +2,15 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:fozo_customer_app/provider/address_provider.dart';
 import 'package:fozo_customer_app/utils/helper/shared_preferences_helper.dart';
 import 'package:fozo_customer_app/utils/permission/permissions.dart';
 import 'package:fozo_customer_app/utils/services/auth_phone.dart';
+import 'package:fozo_customer_app/views/auth/login_screen.dart';
+import 'package:fozo_customer_app/views/home/home_screen.dart';
 import 'package:provider/provider.dart';
 
 import 'firebase_options.dart';
 import 'provider/home_provider.dart';
-import 'views/home/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,6 +23,8 @@ void main() async {
 
   // Retrieve the stored user email to check login status
   String? userLookup = await SharedPreferencesHelper.getString("userLookup");
+  print(userLookup);
+  print("userLookup");
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -47,9 +49,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (context) => AuthProvider(),
         ),
-        ChangeNotifierProvider(
-          create: (context) => AddressFormProvider(),
-        ),
+        // ChangeNotifierProvider(
+        //   create: (context) => AddressFormProvider(),
+        // ),
         ChangeNotifierProvider(
           create: (context) => FozoHomeProvider(),
         ),
@@ -62,11 +64,12 @@ class MyApp extends StatelessWidget {
         builder: (context, child) {
           return MaterialApp(
             debugShowCheckedModeBanner: false,
-            home: FozoHomeScreen(),
+            // home: LoginScreen(),
+
             // // Determine the home screen based on login status
-            // home: (userLookup!.isNotEmpty && userLookup != "")
-            //     ? const FozoHomeScreen() // If user is logged in, navigate to HomeScreen
-            //     : LoginScreen(), // Otherwise, show EntryScreen (login/signup)
+            home: (userLookup!.isNotEmpty && userLookup != "")
+                ? const FozoHomeScreen() // If user is logged in, navigate to HomeScreen
+                : LoginScreen(), // Otherwise, show EntryScreen (login/signup)
           );
         },
       ),

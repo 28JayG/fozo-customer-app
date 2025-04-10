@@ -15,6 +15,7 @@ import 'package:provider/provider.dart';
 import '../../provider/home_provider.dart';
 import '../../utils/constant/dimensions.dart';
 import '../../utils/helper/shared_preferences_helper.dart';
+// import '../../utils/http/api.dart';
 import '../../utils/http/api.dart';
 import 'product_detail_screen.dart';
 
@@ -151,9 +152,9 @@ class _FozoHomeScreenState extends State<FozoHomeScreen> {
   @override
   void initState() {
     super.initState();
+
     // Fetch data once the widget is initialized
     context.read<FozoHomeProvider>().fetchHomeData();
-
     getMyData();
     getLocationData();
   }
