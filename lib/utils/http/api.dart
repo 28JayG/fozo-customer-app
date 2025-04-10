@@ -11,21 +11,13 @@ class ApiService {
   // GET Request
   static Future<Map<String, dynamic>> getRequest(String endpoint) async {
     try {
-      print("Get URL");
-
       String encodedUrl = Uri.encodeFull('$baseUrl$endpoint');
-      print(encodedUrl);
-      print("encodedUrl");
-      print("encodedUrl");
 
       final headers = await _getHeadersGorGetReq();
-      print(headers);
+      final headers = await _getHeaders();
 
       final response = await http.get(Uri.parse(encodedUrl), headers: headers);
       final responseJson = jsonDecode(response.body);
-      print(response);
-      print(responseJson);
-      print("responseresponse");
       return _handleResponse(response);
     } catch (e) {
       print('GET Request Error: $e');
@@ -37,22 +29,15 @@ class ApiService {
   static Future<Map<String, dynamic>> postRequest(
       String endpoint, Map<String, dynamic> data) async {
     try {
-      print("Post URL");
       String encodedUrl = Uri.encodeFull('$baseUrl$endpoint');
       final headers = await _getHeaders();
 
-      print(encodedUrl);
-
-      print(encodedUrl);
       final response = await http.post(
         Uri.parse(encodedUrl),
         headers: headers,
         body: jsonEncode(data),
       );
       final responseJson = jsonDecode(response.body);
-      print(response);
-      print(responseJson);
-      print("responseresponse");
       return _handleResponse(response);
     } catch (e) {
       print('POST Request Error: $e');
@@ -64,11 +49,8 @@ class ApiService {
   static Future<Map<String, dynamic>> putRequest(
       String endpoint, Map<String, dynamic> data) async {
     try {
-      print("Put URL");
       String encodedUrl = Uri.encodeFull('$baseUrl$endpoint');
       final headers = await _getHeaders();
-
-      print(encodedUrl);
 
       final response = await http.put(
         Uri.parse(encodedUrl),
@@ -109,7 +91,6 @@ class ApiService {
       Map userLookup = jsonDecode(userLookUpString);
       token = userLookup["token"];
     }
-    print(token);
 
     return {
       'Content-Type': 'application/json',
@@ -127,7 +108,6 @@ class ApiService {
       Map userLookup = jsonDecode(userLookUpString);
       token = userLookup["token"];
     }
-    print(token);
 
     return {
       // 'Accept': '*/*',

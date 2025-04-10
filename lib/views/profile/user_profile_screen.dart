@@ -29,10 +29,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     String? userLookUpString =
         await SharedPreferencesHelper.getString("userLookup");
     userLookup = jsonDecode(userLookUpString!);
-    print(userLookUpString);
-    print(userLookup);
-    print(res);
-    print("userLookup");
 
     setState(() {
       userRes = res;
@@ -75,11 +71,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           "profile/customer/" + userRes["customer_id"].toString(),
           {sendKey: newValue});
 
-      print(res);
-
       // Example placeholder:
       await Future.delayed(const Duration(milliseconds: 500));
-      print("Saved $field: $newValue");
     }
 
     setState(() {

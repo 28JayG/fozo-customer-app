@@ -1,19 +1,9 @@
-
-
-// information_screen.dart
-
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fozo_customer_app/core/constants/colour_constants.dart';
 import 'package:fozo_customer_app/views/auth/map_location_screen.dart';
 
-import '../../data/registration_user_model.dart';
-import '../../utils/http/api.dart';
 import 'login_screen.dart';
-// ^ import the file we created
-
-
 
 class InformationScreen extends StatefulWidget {
   final String phoneNumber; // <-- phone from OTP
@@ -49,40 +39,15 @@ class _InformationScreenState extends State<InformationScreen> {
         throw Exception("Name cannot be empty");
       }
 
-      // final idToken = await FirebaseAuth.instance.currentUser?.getIdToken() ?? '';
-
-      // Call the registerUser service
-//       final res = await ApiService.postRequest("auth/firebase",
-// {
-//           'idToken': widget.idToken,
-//           'fullName': name,
-//           'contactNumber': widget.phoneNumber,
-//           // 'contactNumber': "44447774458",
-//           'profileImage': "Pseudo Image",
-//           'address': '', // if you want an address, pass it here
-//           }
-//       );
-      // final result = await RegisterUserService.registerUser(
-      //   name: name,
-      //   phoneNumber: widget.phoneNumber,
-      //   firebaseUid: widget.firebaseUid,
-      // );
-
-      // If successful, we can navigate to next screen
-      // or show a success message
-      // debugPrint('Registration success: $res');
-
-      // Move to the map location screen
       if (!mounted) return;
-
 
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => AddDeliveryLocationScreen(
-              phoneNumber:  widget.phoneNumber,
-              firebaseUid:  widget.firebaseUid,
-              idToken: widget.idToken,
+            phoneNumber: widget.phoneNumber,
+            firebaseUid: widget.firebaseUid,
+            idToken: widget.idToken,
             name: name,
           ),
         ),
@@ -115,14 +80,12 @@ class _InformationScreenState extends State<InformationScreen> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
-
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => LoginScreen(),
               ),
             );
-
           },
         ),
         title: Text(

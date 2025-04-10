@@ -44,8 +44,6 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
   Future<void> getMyData() async {
     final resOutlate = await ApiService.getRequest(
         "Search/Searchmysterybagwithrestaurantid?UserAddress=${widget.myAddress}&Page=1&PageSize=10&RestaurantId=${widget.restaurantId}");
-    print(resOutlate);
-    print("resOutlate");
 
     setState(() {
       resData = resOutlate;
@@ -53,9 +51,6 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
               resOutlate["restaurants"].isNotEmpty == true
           ? resData["restaurants"][0]
           : {};
-
-      print(resResData);
-      print("resResData");
     });
   }
 
@@ -85,10 +80,6 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
   }
 
   void totalPriceCal() {
-    print(1111);
-    print(myCart);
-    print("{totalPrice, totalBag}");
-
     totalPrice = 0;
     totalBag = 0;
     for (int i = 0; i < myCart.length; i++) {
@@ -101,8 +92,6 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
       totalPrice = totalPrice + (cartCount * priceTag);
       totalBag = totalBag + cartCount;
     }
-    print({totalPrice, totalBag});
-    print("{totalPrice, totalBag}");
     setState(() {});
   }
 
@@ -354,7 +343,6 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
                       separatorBuilder: (_, __) => SizedBox(height: 12.h),
                       itemBuilder: (context, index) {
                         final item = resData["restaurants"][index];
-                        print(item);
                         return _bagCard(item);
                       },
                     ),
@@ -919,199 +907,3 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
     );
   }
 }
-
-/// A single bag item card that toggles between "ADD +" or quantity selector.
-
-// class BagCard extends StatefulWidget {
-//   final BagItem item; // The item data (id, title, price, etc.)
-//
-//   const BagCard({super.key, required this.item});
-//
-//   @override
-//   State<BagCard> createState() => _BagCardState();
-// }
-//
-// class _BagCardState extends State<BagCard> {
-//   double _widthP = 0.00;
-//   double _heightP = 0.00;
-//
-//   @override
-//   void initState() {
-//     // TODO: implement initState
-//     super.initState();
-//     print(widget.item);
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     double widthP = Dimensions.myWidthThis(context);
-//     double heightP = Dimensions.myHeightThis(context);
-//     setState(() {
-//       _heightP = heightP;
-//       _widthP = widthP;
-//     });
-//     final bagProvider = Provider.of<BagProvider>(context);
-//     final quantity = bagProvider.getQuantity(widget.item.id);
-//
-//     return Container(
-//       padding: EdgeInsets.all(12.r),
-//       margin: EdgeInsets.only(bottom: 8.h),
-//       decoration: BoxDecoration(
-//         color: Colors.white,
-//         borderRadius: BorderRadius.circular(8.r),
-//         boxShadow: [
-//           BoxShadow(
-//             color: Colors.black12,
-//             blurRadius: 2.r,
-//             offset: Offset(0, 1.h),
-//           ),
-//         ],
-//       ),
-//       child: Row(
-//         crossAxisAlignment: CrossAxisAlignment.start,
-//         children: [
-//           // Image on the left
-//           ClipRRect(
-//             borderRadius: BorderRadius.circular(8.r),
-//             child: CachedNetworkImage(
-//               imageUrl: widget.item.imageUrl,
-//               width: 60.w,
-//               height: 60.h,
-//               fit: BoxFit.cover,
-//               placeholder: (context, url) => Container(
-//                 color: Colors.grey.shade200,
-//                 alignment: Alignment.center,
-//                 child: const CircularProgressIndicator(),
-//               ),
-//               errorWidget: (context, url, error) => const Icon(Icons.error),
-//             ),
-//           ),
-//           SizedBox(width: 10.w),
-//
-//           // Middle text
-//           Expanded(
-//             child: Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 Text(
-//                   widget.item.size,
-//                   style: TextStyle(
-//                     fontSize: 14.sp,
-//                     fontWeight: FontWeight.bold,
-//                   ),
-//                 ),
-//                 SizedBox(height: 4.h),
-//                 Text(
-//                   widget.item.description,
-//                   style: TextStyle(
-//                     fontSize: 12.sp,
-//                     color: Colors.grey.shade700,
-//                   ),
-//                 ),
-//                 SizedBox(height: 4.h),
-//                 Text(
-//                   "₹${widget.item.price} worth ₹${widget.item.price + 50}",
-//                   style: TextStyle(
-//                     fontSize: 13.sp,
-//                     color: Colors.black87,
-//                   ),
-//                 ),
-//               ],
-//             ),
-//           ),
-//
-//           // Right side: either "ADD +" or quantity selector
-//           quantity == 0
-//               ? _buildAddButton(context, bagProvider)
-//               : _buildQuantitySelector(context, bagProvider, quantity),
-//         ],
-//       ),
-//     );
-//   }
-//
-//   Widget _buildAddButton(BuildContext context, BagProvider bagProvider) {
-//     return Container(
-//       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-//       decoration: BoxDecoration(
-//         border: Border.all(color: Colors.green.shade900),
-//         borderRadius: BorderRadius.circular(12.r),
-//       ),
-//       child: GestureDetector(
-//         onTap: () {
-//           // If widget.item not in bag, add it; else increment
-//           bagProvider.addItem(widget.item);
-//         },
-//         child: Row(
-//           mainAxisSize: MainAxisSize.min,
-//           children: [
-//             Text(
-//               "ADD",
-//               style: TextStyle(
-//                 color: Colors.green.shade900,
-//                 fontSize: 12.sp,
-//                 fontWeight: FontWeight.bold,
-//               ),
-//             ),
-//             SizedBox(width: 4.w),
-//             Icon(
-//               Icons.add,
-//               size: 18.sp,
-//               color: Colors.green.shade900,
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-//
-//   Widget _buildQuantitySelector(
-//       BuildContext context, BagProvider bagProvider, int quantity) {
-//     return Container(
-//       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-//       decoration: BoxDecoration(
-//         border: Border.all(color: Colors.green.shade900),
-//         borderRadius: BorderRadius.circular(12.r),
-//       ),
-//       child: Row(
-//         mainAxisSize: MainAxisSize.min,
-//         children: [
-//           // minus
-//           GestureDetector(
-//             onTap: () {
-//               bagProvider.decrementItem(widget.item.id);
-//             },
-//             child: Icon(
-//               Icons.remove,
-//               size: 18.sp,
-//               color: Colors.green.shade900,
-//             ),
-//           ),
-//           SizedBox(width: 8.w),
-//
-//           // quantity
-//           Text(
-//             "$quantity",
-//             style: TextStyle(
-//               color: Colors.green.shade900,
-//               fontSize: 14.sp,
-//               fontWeight: FontWeight.bold,
-//             ),
-//           ),
-//           SizedBox(width: 8.w),
-//
-//           // plus
-//           GestureDetector(
-//             onTap: () {
-//               bagProvider.incrementItem(widget.item.id);
-//             },
-//             child: Icon(
-//               Icons.add,
-//               size: 18.sp,
-//               color: Colors.green.shade900,
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }

@@ -105,8 +105,6 @@ class _AddNewDeliveryLocationScreenState
     String address = placeData["formatted_address"];
 
     LatLng newPosition = LatLng(lat, lng);
-    print(placeData);
-    print("placeData");
 
     selectLocation = newPosition;
     selectPlaceAddress = address;
@@ -183,20 +181,13 @@ class _AddNewDeliveryLocationScreenState
               onChanged: (value) async {
                 if (value != "") {
                   // Do something with the value
-                  print("User typed: $value");
-
                   String encodedUrl = Uri.encodeFull(value.toString().trim());
-                  print(encodedUrl);
 
                   final response = await http.get(Uri.parse(
                       'https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodedUrl}&key=AIzaSyAy8IOF5Fdx7gPUfWWelE_-kYFiyzYZqYE'));
 
-                  print(
-                      'https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodedUrl}&key=AIzaSyAy8IOF5Fdx7gPUfWWelE_-kYFiyzYZqYE');
-
                   if (response.statusCode >= 200 && response.statusCode < 300) {
                     Map data = jsonDecode(response.body);
-                    print(data);
                     searchList = data["results"];
                     setState(() {});
                   } else {
@@ -256,7 +247,6 @@ class _AddNewDeliveryLocationScreenState
                                       onPlaceSelected(
                                           onePlace); // Pass the whole place object
 
-                                      print("Clicked on: ${onePlace["name"]}");
                                       // Your logic here
                                     },
                                     child: Card(
@@ -358,7 +348,6 @@ class _AddNewDeliveryLocationScreenState
     await showDialog(
       context: context,
       builder: (context) {
-        print(place);
         return Dialog(
           child: SingleChildScrollView(
             child: AddressForm(
@@ -422,7 +411,6 @@ class _AddressFormState extends State<AddressForm> {
   }
 
   void _getData() {
-    print(widget.place);
     streetAddress = widget.place?.street;
     city = widget.place?.locality;
     postalCode = widget.place?.postalCode;

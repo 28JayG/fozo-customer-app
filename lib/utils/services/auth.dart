@@ -32,12 +32,6 @@ class AuthMethods {
     User? userdetails = result.user;
 
     if (result != null) {
-      print("Successful");
-      print(userdetails!.email);
-      print(userdetails!.photoURL);
-      print(userdetails!.uid);
-      print(userdetails!.displayName);
-
       Map<String, dynamic> userInfoMap = {
         "email": userdetails!.email,
         "name": userdetails.displayName,

@@ -43,9 +43,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
       orElse: () => {},
     );
 
-    print(_selectAddress);
-    print("_selectAddress");
-
     setState(() {}); // Refresh the UI if inside a StatefulWidget
   }
 
@@ -174,7 +171,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 separatorBuilder: (_, __) => SizedBox(height: 12.h),
                 itemBuilder: (context, index) {
                   final item = widget.resData["restaurants"][index];
-                  print(item);
                   return _buildCartItemRow(item);
                 },
               ),
