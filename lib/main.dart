@@ -23,8 +23,6 @@ void main() async {
 
   // Retrieve the stored user email to check login status
   String? userLookup = await SharedPreferencesHelper.getString("userLookup");
-  print(userLookup);
-  print("userLookup");
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,

@@ -533,16 +533,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       return;
                     }
 
-                    print({
-                      widget.restaurantId,
-                      widget.myAddress,
-                      widget.myCart,
-                      totalItemPrice,
-                      totalBag,
-                      handlingCharge,
-                      deliveryCharge
-                    });
-
                     Navigator.push(
                       context,
                       MaterialPageRoute(
