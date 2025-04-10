@@ -13,7 +13,7 @@ class ApiService {
     try {
       String encodedUrl = Uri.encodeFull('$baseUrl$endpoint');
 
-      final headers = await _getHeadersGorGetReq();
+      // final headers = await _getHeadersGorGetReq();
       final headers = await _getHeaders();
 
       final response = await http.get(Uri.parse(encodedUrl), headers: headers);
