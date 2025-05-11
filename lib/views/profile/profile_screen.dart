@@ -82,7 +82,7 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> {
                         // Name
                         Text(
                           // userLookup["user"][""] ?? "",
-                          "",
+                          userRes["full_name"] ?? "",
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.bold,

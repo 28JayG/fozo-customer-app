@@ -3,15 +3,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'package:fozo_customer_app/core/constants/colour_constants.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import '../../utils/constant/dimensions.dart';
-import '../../utils/services/auth_phone.dart';
 import '../../utils/services/auth.dart';
 import '../../widgets/custom_button_widget.dart';
-import 'package:carousel_slider/carousel_slider.dart';
-import 'package:flutter/material.dart';
+import '../home/home_screen.dart';
+import 'otp_verification_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -19,26 +18,24 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-
-
   int currentIndex = 0;
   final List<Map<String, dynamic>> content = [
     {
       'title': 'Discover Restaurants',
       'description':
-      'Find Surprise Bags from your favorite restaurants at up to 50% OFF near you.',
+          'Find Surprise Bags from your favorite restaurants at up to 50% OFF near you.',
       'image': 'assets/png/photo1.png',
     },
     {
-      'title': 'Enjoy Delicious Meals',
+      'title': 'Reserve your meal bag',
       'description':
-      'Get tasty meals at amazing prices and enjoy new culinary experiences.',
+          'Secure your meal by reserving a Surprise Bag. Get ready for a delicious surprise.',
       'image': 'assets/png/photo2.png',
     },
     {
-      'title': 'Explore New Cuisines',
+      'title': 'Get It Delivered & Enjoy',
       'description':
-      'Discover a variety of cuisines and expand your food horizons.',
+          'Sit back and relax—your meal is on the way! Enjoy great food while saving money & fresh food.',
       'image': 'assets/png/photo3.png',
     },
   ];
@@ -72,15 +69,16 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  String _phoneNumber = '';
+
   @override
   Widget build(BuildContext context) {
-
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     double widthP = Dimensions.myWidthThis(context);
     double heightP = Dimensions.myHeightThis(context);
 
-    final authProvider = Provider.of<AuthProvider>(context);
+    // final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
       backgroundColor: AppColor.backgroundColor,
@@ -104,28 +102,38 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     children: [
                       SizedBox(height: screenHeight * 0.05),
-
                       Align(
                         alignment: Alignment.topRight,
                         child: Container(
-                          width: widthP*75,
-                          height: heightP*35,
-                          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 14),
+                          width: widthP * 75,
+                          height: heightP * 35,
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 6, horizontal: 14),
                           decoration: BoxDecoration(
-                            color:  Color(0xFF0732280F).withOpacity(0.2), // Change the color as needed
+                            color: Color(0xFF0732280F)
+                                .withOpacity(0.2), // Change the color as needed
                             borderRadius: BorderRadius.circular(24),
                           ),
                           child: Center(
-                            child: Text(
-                                  'Skip',
-                                  style: GoogleFonts.poppins(
-                                    color: Colors.black,
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => FozoHomeScreen(),
                                   ),
+                                );
+                              },
+                              child: Text(
+                                'Skip',
+                                style: GoogleFonts.poppins(
+                                  color: Colors.black,
                                 ),
+                              ),
+                            ),
                           ),
                         ),
                       ),
-
                       Expanded(
                         child: PageView.builder(
                           itemCount: content.length,
@@ -140,12 +148,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Container(
-                                  width: screenWidth * 0.4,
-                                  height: screenWidth * 0.4,
+                                  width: screenWidth * 0.38,
+                                  height: screenWidth * 0.38,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(20),
                                     image: DecorationImage(
-                                      image: AssetImage(content[index]['image']),
+                                      image:
+                                          AssetImage(content[index]['image']),
                                       fit: BoxFit.cover,
                                     ),
                                   ),
@@ -174,38 +183,43 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 ),
                                 SizedBox(height: screenHeight * 0.02),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: List.generate(content.length,
-                                          (indicatorIndex) {
-                                        return AnimatedContainer(
-                                          duration: const Duration(milliseconds: 300),
-                                          margin: const EdgeInsets.symmetric(
-                                              horizontal: 4),
-                                          width: indicatorIndex == currentIndex
-                                              ? 16
-                                              : 8,
-                                          height: 8,
-                                          decoration: BoxDecoration(
-                                            color: indicatorIndex == currentIndex
-                                                ? Color(0xFF3D914F)
-                                                : Colors.grey,
-                                            borderRadius: BorderRadius.circular(8),
-                                          ),
-                                        );
-                                      }),
-                                ),
                               ],
                             );
                           },
                         ),
                       ),
+                      Container(
+                        color: Colors.transparent,
+                        child: Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children:
+                                List.generate(content.length, (indicatorIndex) {
+                              return AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 4),
+                                width: indicatorIndex == currentIndex ? 16 : 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: indicatorIndex == currentIndex
+                                      ? Color(0xFF3D914F)
+                                      : Colors.grey,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              );
+                            }),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 40 * heightP,
+                      )
                     ],
                   ),
                 ),
               ],
             ),
-
 
             /// Phone Input Section
             Padding(
@@ -213,11 +227,14 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "Enter your phone number",
-                    style:
-                    TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
+                  Center(
+                    child: Text(
+                      "Login or sign up",
+                      style: TextStyle(
+                          fontSize: 16.sp, fontWeight: FontWeight.w600),
+                    ),
                   ),
+
                   SizedBox(height: 10.h),
                   Container(
                     decoration: BoxDecoration(
@@ -241,16 +258,18 @@ class _LoginScreenState extends State<LoginScreen> {
                               hintStyle: TextStyle(
                                 color: Colors.grey,
                               ),
-                              hintText: "96149-75333",
+                              hintText: "Enter phone number",
                               border: InputBorder.none,
                               counterText: "", // Remove the default counter
                               contentPadding:
-                              EdgeInsets.symmetric(horizontal: 12.w),
+                                  EdgeInsets.symmetric(horizontal: 12.w),
                             ),
                             keyboardType: TextInputType.phone,
                             maxLength: 10,
                             onChanged: (value) {
-                              authProvider.setPhoneNumber(value.trim());
+                              setState(() {
+                                _phoneNumber = value.trim();
+                              });
                             },
                           ),
                         ),
@@ -265,8 +284,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     text: "Continue",
                     onPressed: () {
                       // Minimal check: phone length should be 10
-                      if (authProvider.phoneNumber.length == 10) {
-                        authProvider.sendOTP(context);
+                      if (_phoneNumber.length == 10) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => OTPVerificationScreen(
+                              phoneNumber: _phoneNumber,
+                            ),
+                          ),
+                        );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -289,9 +315,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       Expanded(child: Divider(color: Colors.grey.shade300)),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 8.w),
-                        child: Text("Or login with",
+                        child: Text("Or continue with",
                             style:
-                            TextStyle(fontSize: 14.sp, color: Colors.grey)),
+                                TextStyle(fontSize: 14.sp, color: Colors.grey)),
                       ),
                       Expanded(child: Divider(color: Colors.grey.shade300)),
                     ],
@@ -312,9 +338,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           width: 56,
                         ),
                       ),
-
                       SizedBox(width: 40.w),
-
                       GestureDetector(
                         onTap: () {
                           AuthMethods().signInWithGoogle(context);
@@ -326,13 +350,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           width: 56,
                         ),
                       ),
-
                     ],
                   ),
                 ],
               ),
             ),
-
 
             SizedBox(height: 30.h),
 
@@ -387,8 +409,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-
-
-
-
-

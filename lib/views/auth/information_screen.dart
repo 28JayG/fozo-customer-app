@@ -1,20 +1,20 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fozo_customer_app/core/constants/colour_constants.dart';
 import 'package:fozo_customer_app/views/auth/map_location_screen.dart';
 
+import '../../utils/helper/shared_preferences_helper.dart';
+import '../../utils/permission/permissions.dart';
 import 'login_screen.dart';
 
 class InformationScreen extends StatefulWidget {
-  final String phoneNumber; // <-- phone from OTP
-  final String firebaseUid; // <-- user.uid from OTP
-  final String idToken; // <-- user.uid from OTP
-
   const InformationScreen({
     super.key,
-    required this.phoneNumber,
-    required this.firebaseUid,
-    required this.idToken,
+    // required this.phoneNumber,
+    // required this.firebaseUid,
+    // required this.idToken,
   });
 
   @override
@@ -27,6 +27,8 @@ class _InformationScreenState extends State<InformationScreen> {
   bool _isLoading = false;
   String? _errorMessage;
 
+  Map getData = {};
+
   Future<void> _saveUserInfo() async {
     setState(() {
       _isLoading = true;
@@ -38,18 +40,24 @@ class _InformationScreenState extends State<InformationScreen> {
       if (name.isEmpty) {
         throw Exception("Name cannot be empty");
       }
-
+      // Request all necessary app permissions (e.g., storage, location, etc.)
+      await AppPermissions.requestAllPermissions();
       if (!mounted) return;
+
+      String jsonString = jsonEncode({
+        "pageName": "AddDeliveryLocationScreen",
+        "phoneNumber": getData["phoneNumber"],
+        "firebaseUid": getData["firebaseUid"],
+        "idToken": getData["idToken"],
+        "name": name,
+      });
+
+      await SharedPreferencesHelper.saveString("loginData", jsonString);
 
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => AddDeliveryLocationScreen(
-            phoneNumber: widget.phoneNumber,
-            firebaseUid: widget.firebaseUid,
-            idToken: widget.idToken,
-            name: name,
-          ),
+          builder: (context) => AddDeliveryLocationScreen(),
         ),
       );
     } catch (e) {
@@ -67,6 +75,24 @@ class _InformationScreenState extends State<InformationScreen> {
   void dispose() {
     _nameController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Fetch data once the widget is initialized
+    _getData();
+  }
+
+  Future<void> _getData() async {
+    // Retrieve the stored user email to check login status
+    String? jsonString = await SharedPreferencesHelper.getString("loginData");
+
+    if (jsonString != null) {
+      setState(() {
+        getData = jsonDecode(jsonString);
+      });
+    }
   }
 
   @override

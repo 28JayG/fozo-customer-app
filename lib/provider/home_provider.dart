@@ -17,7 +17,7 @@ class FozoHomeProvider extends ChangeNotifier {
     try {
       isLoading = true;
       hasError = false;
-      notifyListeners();
+      // notifyListeners();
 
       // Simulate network delay
       await Future.delayed(const Duration(seconds: 2));

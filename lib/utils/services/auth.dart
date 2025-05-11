@@ -5,14 +5,29 @@ import 'package:fozo_customer_app/utils/http/api.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:the_apple_sign_in/the_apple_sign_in.dart';
 
+import '../../views/home/home_screen.dart';
+
 class AuthMethods {
   final FirebaseAuth auth = FirebaseAuth.instance;
 
   getCurrentUser() async {
-    return await auth.currentUser;
+    return auth.currentUser;
+  }
+
+  Future<void> checkExistingUser(BuildContext context) async {
+    final user = auth.currentUser;
+    if (user != null) {
+      // User is already logged in => go to Home
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const FozoHomeScreen()),
+      );
+      return;
+    }
   }
 
   signInWithGoogle(BuildContext context) async {
+    // await checkExistingUser(context);
     final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
     final GoogleSignIn googleSignIn = GoogleSignIn();
 

@@ -6,7 +6,9 @@ import 'package:flutter_svg/svg.dart';
 import 'package:fozo_customer_app/core/constants/colour_constants.dart';
 
 import '../../utils/constant/dimensions.dart';
+import '../../utils/helper/shared_preferences_helper.dart';
 import '../../utils/http/api.dart';
+import '../auth/login_screen.dart';
 import 'cart_screen.dart';
 
 class SurpriseBagDetailPage extends StatefulWidget {
@@ -44,6 +46,25 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
   Future<void> getMyData() async {
     final resOutlate = await ApiService.getRequest(
         "Search/Searchmysterybagwithrestaurantid?UserAddress=${widget.myAddress}&Page=1&PageSize=10&RestaurantId=${widget.restaurantId}");
+    print("apidata");
+    print(resOutlate);
+    print(resOutlate);
+
+    setState(() {
+      resData = resOutlate;
+      resResData = resOutlate["restaurants"] is List &&
+              resOutlate["restaurants"].isNotEmpty == true
+          ? resData["restaurants"][0]
+          : {};
+    });
+    getReviewData(resOutlate);
+  }
+
+  Future<void> getReviewData(resResData) async {
+    final resOutlate = await ApiService.getRequest(
+        "FoodItemReviews/{foodItemId}/${resResData[0].myAddress}ratings");
+    print("apidata");
+    print(resOutlate);
 
     setState(() {
       resData = resOutlate;
@@ -55,12 +76,21 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
   }
 
   void addToCart(Map selectItem) {
+    print(selectItem);
+    print(myCart);
     int index =
         myCart.indexWhere((item) => item["itemName"] == selectItem["packsize"]);
     if (index == -1) {
-      myCart.add({"itemName": selectItem["packsize"], "cart": 1});
+      myCart.add({
+        "itemName": selectItem["packsize"],
+        "quantity": 1,
+        "foodItemId": selectItem["mystery_bag_id"],
+        "price": selectItem["discountedPrice"],
+        "isMysteryBag": true
+      });
     } else {
-      myCart[index]["cart"] += 1;
+      myCart[index]["quantity"] += 1;
+      myCart[index]["price"] += selectItem["discountedPrice"];
     }
     setState(() {});
     totalPriceCal();
@@ -70,8 +100,9 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
     int index =
         myCart.indexWhere((item) => item["itemName"] == selectItem["packsize"]);
     if (index != -1) {
-      myCart[index]["cart"] -= 1;
-      if (myCart[index]["cart"] <= 0) {
+      myCart[index]["quantity"] -= 1;
+      myCart[index]["price"] -= selectItem["discountedPrice"];
+      if (myCart[index]["quantity"] <= 0) {
         myCart.removeAt(index);
       }
       setState(() {});
@@ -84,7 +115,7 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
     totalBag = 0;
     for (int i = 0; i < myCart.length; i++) {
       String itemName = myCart[i]["itemName"];
-      int cartCount = myCart[i]["cart"];
+      int cartCount = myCart[i]["quantity"];
 
       int index = resData["restaurants"]
           .indexWhere((item) => item["packsize"] == itemName);
@@ -158,8 +189,11 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: CachedNetworkImage(
-                      imageUrl:
-                          "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=4299&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                      imageUrl: resData.isNotEmpty
+                          ? resData["restaurants"].length > 0
+                              ? resData["restaurants"][0]["imageUrl"]
+                              : "https://betazeninfotech.com"
+                          : "https://betazeninfotech.com",
                       height: 220 * _heightP.h,
                       width: double.infinity,
                       fit: BoxFit.cover,
@@ -716,11 +750,25 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
                   ),
                 ),
                 SizedBox(height: 4.h),
-                Text(
-                  "₹${item["discountedPrice"]} worth ₹${item["originalPrice"]}",
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    color: Colors.black87,
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '₹${item["discountedPrice"]} ',
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      TextSpan(
+                        text: 'worth ₹${item["originalPrice"]}',
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -729,7 +777,7 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
 
           // Right side: either "ADD +" or quantity selector
           myCart.firstWhere((e) => e["itemName"] == item["packsize"],
-                      orElse: () => {"cart": 0})["cart"] ==
+                      orElse: () => {"quantity": 0})["quantity"] ==
                   0
               ? _buildAddButton(item)
               : _buildQuantitySelector(item),
@@ -746,8 +794,18 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: GestureDetector(
-        onTap: () {
-          addToCart(item);
+        onTap: () async {
+          String userLookup =
+              await SharedPreferencesHelper.getString("userLookup") ?? "";
+
+          if (userLookup != "") {
+            addToCart(item);
+          } else {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => LoginScreen()),
+            );
+          }
         },
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -784,8 +842,18 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
         children: [
           // minus
           GestureDetector(
-            onTap: () {
-              removeFromCart(item);
+            onTap: () async {
+              String userLookup =
+                  await SharedPreferencesHelper.getString("userLookup") ?? "";
+
+              if (userLookup != "") {
+                removeFromCart(item);
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginScreen()),
+                );
+              }
             },
             child: Icon(
               Icons.remove,
@@ -799,7 +867,7 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
           Text(
             myCart
                 .firstWhere((e) => e["itemName"] == item["packsize"],
-                    orElse: () => {"cart": 0})["cart"]
+                    orElse: () => {"quantity": 0})["quantity"]
                 .toString(),
             style: TextStyle(
               color: Colors.green.shade900,
@@ -811,8 +879,18 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
 
           // plus
           GestureDetector(
-            onTap: () {
-              addToCart(item);
+            onTap: () async {
+              String userLookup =
+                  await SharedPreferencesHelper.getString("userLookup") ?? "";
+
+              if (userLookup != "") {
+                addToCart(item);
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginScreen()),
+                );
+              }
             },
             child: Icon(
               Icons.add,

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -5,6 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fozo_customer_app/core/constants/colour_constants.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../utils/helper/shared_preferences_helper.dart';
 import '../../utils/http/api.dart';
 import '../payment/payment_screen.dart';
 
@@ -36,6 +39,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
   Map _selectAddress = {};
 
   Future<void> _getData() async {
+    print("apidata");
+    print(widget.restaurantId);
+    print(widget.myCart);
+    print(widget.resData);
+
     final resAddress = await ApiService.getRequest("address");
     _addresses = resAddress["data"];
     _selectAddress = _addresses.firstWhere(
@@ -60,7 +68,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     totalBag = 0;
     for (int i = 0; i < widget.myCart.length; i++) {
       String itemName = widget.myCart[i]["itemName"];
-      int cartCount = widget.myCart[i]["cart"];
+      int cartCount = widget.myCart[i]["quantity"];
       int index = widget.resData["restaurants"]
           .indexWhere((item) => item["packsize"] == itemName);
       double priceTag = widget.resData["restaurants"][index]["discountedPrice"];
@@ -74,9 +82,16 @@ class _CheckoutPageState extends State<CheckoutPage> {
     int index = widget.myCart
         .indexWhere((item) => item["itemName"] == selectItem["packsize"]);
     if (index == -1) {
-      widget.myCart.add({"itemName": selectItem["packsize"], "cart": 1});
+      widget.myCart.add({
+        "itemName": selectItem["packsize"],
+        "quantity": 1,
+        "foodItemId": selectItem["mystery_bag_id"],
+        "price": selectItem["discountedPrice"],
+        "isMysteryBag": true
+      });
     } else {
-      widget.myCart[index]["cart"] += 1;
+      widget.myCart[index]["quantity"] += 1;
+      widget.myCart[index]["price"] += selectItem["discountedPrice"];
     }
     setState(() {});
     getMyData();
@@ -86,8 +101,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
     int index = widget.myCart
         .indexWhere((item) => item["itemName"] == selectItem["packsize"]);
     if (index != -1) {
-      widget.myCart[index]["cart"] -= 1;
-      if (widget.myCart[index]["cart"] <= 0) {
+      widget.myCart[index]["quantity"] -= 1;
+      widget.myCart[index]["price"] -= selectItem["discountedPrice"];
+
+      if (widget.myCart[index]["quantity"] <= 0) {
         widget.myCart.removeAt(index);
       }
       setState(() {});
@@ -97,8 +114,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   @override
   Widget build(BuildContext context) {
-    final deliveryCharge = 50;
-    final handlingCharge = 35;
+    final deliveryCharge = 0.0;
+    final handlingCharge = 0.0;
 
     // final subTotal = bagProvider.totalCost; // sum of item.price * quantity
     // final grandTotal = subTotal + deliveryCharge + handlingCharge;
@@ -508,7 +525,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 width: double.infinity,
                 height: 48.h,
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    print("object");
                     if (_selectAddress.isEmpty) {
                       showDialog(
                         context: context,
@@ -529,17 +547,39 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       return;
                     }
 
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PaymentMethodPage(
-                            cartId: cartId,
-                            selectAddress: _selectAddress,
-                            totalPayPrice: totalItemPrice +
-                                handlingCharge +
-                                deliveryCharge),
-                      ),
-                    );
+                    String? userLookUpString =
+                        await SharedPreferencesHelper.getString("userLookup");
+
+                    int userId;
+                    if (userLookUpString != null) {
+                      Map userLookup = jsonDecode(userLookUpString);
+                      print(userLookup);
+                      print(userLookup["user"]);
+                      userId = userLookup["user"]["userId"] ??
+                          userLookup["user"]["user_id"];
+
+                      String email = userLookup["user"]["email"];
+
+                      // return;
+
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PaymentMethodPage(
+                              cartId: cartId,
+                              selectAddress: _selectAddress,
+                              totalPayPrice: totalItemPrice +
+                                  handlingCharge +
+                                  deliveryCharge,
+                              customerId: userId.toString(),
+                              email: email.toString(),
+                              restaurantId: widget.restaurantId.toString(),
+                              cartItems: widget.myCart),
+                        ),
+                      );
+                    }
+
+                    return;
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green.shade900,
@@ -590,11 +630,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
-  // Build each item in the cart
+  // Build each item in the quantity
   Widget _buildCartItemRow(item) {
     int count = widget.myCart.firstWhere(
         (e) => e["itemName"] == item["packsize"],
-        orElse: () => {"cart": 0})["cart"];
+        orElse: () => {"quantity": 0})["quantity"];
     if (count == 0) {
       return SizedBox(
         height: 0,

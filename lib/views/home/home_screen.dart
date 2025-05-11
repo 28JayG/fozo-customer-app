@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fozo_customer_app/core/constants/colour_constants.dart';
@@ -17,6 +16,7 @@ import '../../utils/constant/dimensions.dart';
 import '../../utils/helper/shared_preferences_helper.dart';
 // import '../../utils/http/api.dart';
 import '../../utils/http/api.dart';
+import '../auth/login_screen.dart';
 import 'product_detail_screen.dart';
 
 class FozoHomeScreen extends StatefulWidget {
@@ -27,131 +27,33 @@ class FozoHomeScreen extends StatefulWidget {
 }
 
 class _FozoHomeScreenState extends State<FozoHomeScreen> {
+  final TextEditingController _searchController = TextEditingController();
+
   Map<String, dynamic> userLookupJson = {};
 
   Map<String, dynamic> topRatedRestaurent = {
-    "restaurants": [
-      {
-        "restaurantName": "Briyani House",
-        "restaurantId": 16,
-        "foodType": "Veg",
-        "deliveredBy": "11:00:00 - 22:00:00",
-        "mysteryBagsLeft": 5,
-        "totalCO2Saved": 5.25,
-        "maxRating": 4.5,
-        "originalPrice": 200.0,
-        "discountedPrice": 100.0,
-        "address":
-            "Shop No 49 & 50, Azad Market, Telco Town, Telco, Jamshedpur - 831004",
-        "description": null,
-        "size": "Small Pack",
-        "outletdesc": "",
-        "distance": 10.200722574330216
-      },
-      {
-        "restaurantName": "Briyani House",
-        "restaurantId": 16,
-        "foodType": "Veg",
-        "deliveredBy": "11:00:00 - 22:00:00",
-        "mysteryBagsLeft": 5,
-        "totalCO2Saved": 5.25,
-        "maxRating": 4.5,
-        "originalPrice": 200.0,
-        "discountedPrice": 150.0,
-        "address":
-            "Shop No 49 & 50, Azad Market, Telco Town, Telco, Jamshedpur - 831004",
-        "description": null,
-        "size": "Medium Pack",
-        "outletdesc": "",
-        "distance": 10.200722574330216
-      },
-      {
-        "restaurantName": "Briyani House",
-        "restaurantId": 16,
-        "foodType": "Non-Veg",
-        "deliveredBy": "11:00:00 - 22:00:00",
-        "mysteryBagsLeft": 5,
-        "totalCO2Saved": 5.25,
-        "maxRating": 4.5,
-        "originalPrice": 400.0,
-        "discountedPrice": 350.0,
-        "address":
-            "Shop No 49 & 50, Azad Market, Telco Town, Telco, Jamshedpur - 831004",
-        "description": null,
-        "size": "Large Pack",
-        "outletdesc": "",
-        "distance": 10.200722574330216
-      }
-    ],
+    "restaurants": [],
     "totalCount": 3,
     "page": 1,
     "pageSize": 3,
     "totalPages": 0
   };
+  List topRatedRestaurentFiltered = [];
 
   Map<String, dynamic> availableRestaurent = {
-    "restaurants": [
-      {
-        "restaurantName": "Briyani House",
-        "restaurantId": 16,
-        "foodType": "Veg",
-        "deliveredBy": "11:00:00 - 22:00:00",
-        "mysteryBagsLeft": 5,
-        "totalCO2Saved": 5.25,
-        "maxRating": 4.5,
-        "originalPrice": 200.0,
-        "discountedPrice": 100.0,
-        "address":
-            "Shop No 49 & 50, Azad Market, Telco Town, Telco, Jamshedpur - 831004",
-        "description": null,
-        "size": "Small Pack",
-        "outletdesc": "",
-        "distance": 10.200722574330216
-      },
-      {
-        "restaurantName": "Briyani House",
-        "restaurantId": 16,
-        "foodType": "Veg",
-        "deliveredBy": "11:00:00 - 22:00:00",
-        "mysteryBagsLeft": 5,
-        "totalCO2Saved": 5.25,
-        "maxRating": 4.5,
-        "originalPrice": 200.0,
-        "discountedPrice": 150.0,
-        "address":
-            "Shop No 49 & 50, Azad Market, Telco Town, Telco, Jamshedpur - 831004",
-        "description": null,
-        "size": "Medium Pack",
-        "outletdesc": "",
-        "distance": 10.200722574330216
-      },
-      {
-        "restaurantName": "Briyani House",
-        "restaurantId": 16,
-        "foodType": "Non-Veg",
-        "deliveredBy": "11:00:00 - 22:00:00",
-        "mysteryBagsLeft": 5,
-        "totalCO2Saved": 5.25,
-        "maxRating": 4.5,
-        "originalPrice": 400.0,
-        "discountedPrice": 350.0,
-        "address":
-            "Shop No 49 & 50, Azad Market, Telco Town, Telco, Jamshedpur - 831004",
-        "description": null,
-        "size": "Large Pack",
-        "outletdesc": "",
-        "distance": 10.200722574330216
-      }
-    ],
-    "totalCount": 3,
+    "restaurants": [],
+    "totalCount": 0,
     "page": 1,
-    "pageSize": 3,
+    "pageSize": 0,
     "totalPages": 0
   };
+  List availableRestaurentFiltered = [];
 
   @override
   void initState() {
     super.initState();
+
+    _searchController.addListener(_onSearchChanged);
 
     // Fetch data once the widget is initialized
     context.read<FozoHomeProvider>().fetchHomeData();
@@ -160,6 +62,8 @@ class _FozoHomeScreenState extends State<FozoHomeScreen> {
   }
 
   Future<void> getMyData() async {
+    print("kkk");
+
     String? userLookupString =
         await SharedPreferencesHelper.getString("userLookup");
     if (userLookupString != null) {
@@ -168,6 +72,23 @@ class _FozoHomeScreenState extends State<FozoHomeScreen> {
     } else {
       print("No data found!");
     }
+  }
+
+  void _onSearchChanged() {
+    String searchValue = _searchController.text.toLowerCase();
+    setState(() {
+      topRatedRestaurentFiltered =
+          topRatedRestaurent["restaurants"].where((restaurant) {
+        String name = restaurant["restaurantName"]?.toLowerCase() ?? "";
+        return name.contains(searchValue);
+      }).toList();
+
+      availableRestaurentFiltered =
+          availableRestaurent["restaurants"].where((restaurant) {
+        String name = restaurant["restaurantName"]?.toLowerCase() ?? "";
+        return name.contains(searchValue);
+      }).toList();
+    });
   }
 
   String locationMessage = "";
@@ -206,7 +127,7 @@ class _FozoHomeScreenState extends State<FozoHomeScreen> {
       List<Placemark> placemarks = await placemarkFromCoordinates(lat, lon);
       Placemark place = placemarks[0];
 
-      return "${place.street}, ${place.locality}, ${place.country}";
+      return "${place.name}, ${place.street}, ${place.locality}, ${place.country}";
     } catch (e) {
       return "Could not get address";
     }
@@ -227,17 +148,22 @@ class _FozoHomeScreenState extends State<FozoHomeScreen> {
 
       final resOutlate = await ApiService.getRequest(
           "Search/Searchmysterybagwithoutlet?UserAddress=$address&Page=1&PageSize=10");
-
+      print("apidata");
+      print(resOutlate);
       setState(() {
         availableRestaurent = resOutlate;
       });
 
       final resRatingWise = await ApiService.getRequest(
           "Search/Searchmysterybagratingwise?UserAddress=$address&Page=1&PageSize=10");
+      print("apidata");
+      print(resRatingWise);
 
       setState(() {
         topRatedRestaurent = resRatingWise;
       });
+
+      _onSearchChanged();
     } catch (e) {
       setState(() {
         locationMessage = "Error: $e";
@@ -253,372 +179,411 @@ class _FozoHomeScreenState extends State<FozoHomeScreen> {
 
     final provider = context.watch<FozoHomeProvider>();
 
-    return Scaffold(
-      backgroundColor: AppColor.backgroundColor,
-      body: SafeArea(
-        child: provider.isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : provider.hasError
-                ? Center(
-                    child: Text(
-                      "Error: ${provider.errorMessage}",
-                      style: TextStyle(fontSize: 16.sp),
-                    ),
-                  )
-                : SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Stack(
-                          children: [
-                            Container(
-                              width: double.infinity,
-                              height: 250.h,
-                              decoration: BoxDecoration(
-                                color: Color.fromARGB(255, 203, 238, 173),
-                                borderRadius: BorderRadius.only(
-                                  bottomLeft: Radius.circular(30.r),
-                                  bottomRight: Radius.circular(30.r),
+    return WillPopScope(
+      onWillPop: () {
+        // This acts like onBackPressed
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Back not allowed')),
+        );
+        return Future.value(false); // ✅ Wrap in Future
+      },
+      child: Scaffold(
+        backgroundColor: AppColor.backgroundColor,
+        body: SafeArea(
+          child: provider.isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : provider.hasError
+                  ? Center(
+                      child: Text(
+                        "Error: ${provider.errorMessage}",
+                        style: TextStyle(fontSize: 16.sp),
+                      ),
+                    )
+                  : SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Stack(
+                            children: [
+                              Container(
+                                width: double.infinity,
+                                height: 250.h,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Color(0xFFEEFFA9), // top color
+                                      Color(0xFFD4ED6D), // bottom color
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.only(
+                                    bottomLeft: Radius.circular(30.r),
+                                    bottomRight: Radius.circular(30.r),
+                                  ),
                                 ),
                               ),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: (20 * widthP).w,
-                                vertical: (20 * heightP).h,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Address Card
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      // Location Icon
-                                      Icon(
-                                        Icons.location_on,
-                                        color: Color(0xFF073228),
-                                        size: (24 * heightP).sp,
-                                      ),
-                                      SizedBox(width: 8.w),
+                              Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: (20 * widthP).w,
+                                  vertical: (20 * heightP).h,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Address Card
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        // Location Icon
+                                        Icon(
+                                          Icons.location_on,
+                                          color: Color(0xFF073228),
+                                          size: (24 * heightP).sp,
+                                        ),
+                                        SizedBox(width: 8.w),
 
-                                      // Expanded Column for address
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              "Current Location",
+                                        // Expanded Column for address
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "Current Location",
+                                                style: TextStyle(
+                                                  fontSize: 16.sp,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black87,
+                                                ),
+                                              ),
+                                              SizedBox(height: (4 * heightP).h),
+                                              Text(
+                                                addressMessage,
+                                                style: TextStyle(
+                                                  fontSize: 13.sp,
+                                                  color: Color(0xFF073228),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+
+                                        // Small horizontal gap before avatar
+                                        SizedBox(width: (6 * widthP).w),
+
+                                        // Circular Avatar (e.g., user profile)
+                                        GestureDetector(
+                                          onTap: () async {
+                                            String userLookup =
+                                                await SharedPreferencesHelper
+                                                        .getString(
+                                                            "userLookup") ??
+                                                    "";
+
+                                            if (userLookup != "") {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        const ProfileHomeScreen()),
+                                              );
+                                            } else {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        LoginScreen()),
+                                              );
+                                            }
+                                          },
+                                          child: CircleAvatar(
+                                            radius: 20.r,
+                                            backgroundColor: Color(
+                                                0xFF91A14C), // Updated background color
+                                            child: Icon(
+                                              Icons.person,
+                                              color: Colors.white,
+                                              size: 24 * heightP,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+
+                                    SizedBox(height: 20.h),
+
+                                    // Search Bar
+                                    Container(
+                                      height: (40 * heightP).h,
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 12.w),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius:
+                                            BorderRadius.circular(15.r),
+                                      ),
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.search,
+                                            color: Color(0xFF073228),
+                                            size: 20.sp,
+                                          ),
+                                          SizedBox(width: 8.w),
+                                          Expanded(
+                                            child: TextField(
+                                              controller: _searchController,
+                                              decoration: InputDecoration(
+                                                isCollapsed:
+                                                    true, // Fixes vertical alignment
+                                                hintText: "Search...",
+                                                hintStyle: TextStyle(
+                                                  fontSize: 16.sp,
+                                                  color: Colors.black54,
+                                                ),
+                                                border: InputBorder.none,
+                                              ),
                                               style: TextStyle(
                                                 fontSize: 16.sp,
-                                                fontWeight: FontWeight.bold,
                                                 color: Colors.black87,
                                               ),
                                             ),
-                                            SizedBox(height: (4 * heightP).h),
-                                            Text(
-                                              addressMessage,
-                                              style: TextStyle(
-                                                fontSize: 13.sp,
-                                                color: Color(0xFF073228),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-
-                                      // Small horizontal gap before avatar
-                                      SizedBox(width: (6 * widthP).w),
-
-                                      // Circular Avatar (e.g., user profile)
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    const ProfileHomeScreen()),
-                                          );
-                                        },
-                                        child: CircleAvatar(
-                                          radius: 20.r,
-                                          backgroundColor: Color(
-                                              0xFF91A14C), // Updated background color
-                                          child: Icon(
-                                            Icons.person,
-                                            color: Colors.white,
-                                            size: 24.sp,
                                           ),
-                                        ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
-
-                                  SizedBox(height: 20.h),
-
-                                  // Search Bar
-                                  Container(
-                                    height: (40 * heightP).h,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(15.r),
                                     ),
-                                    child: Row(
-                                      children: [
-                                        SizedBox(width: 8.w),
-                                        Icon(
-                                          Icons.search,
-                                          color: Color(0xFF073228),
-                                          size: 20.sp,
-                                        ),
-                                        SizedBox(width: (6 * widthP).w),
-                                        Expanded(
-                                          child: TextField(
-                                            decoration: InputDecoration(
-                                              hintText: "Search...",
-                                              hintStyle:
-                                                  TextStyle(fontSize: 14.sp),
-                                              border: InputBorder.none,
-                                            ),
-                                            style: TextStyle(fontSize: 14.sp),
-                                          ),
-                                        ),
-                                        SizedBox(width: (6 * widthP).w),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Positioned(
-                              bottom: 0
-                                  .h, // Adjust for spacing above the bottom edge
-                              left: 0,
-                              right: 0,
-                              child: Center(
-                                child: Text(
-                                  "fozo",
-                                  style: TextStyle(
-                                    fontSize: 80.sp,
-                                    color: Colors.grey.withOpacity(0.2),
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                  ],
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: (6 * heightP).h),
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: (16 * widthP).w,
-                            vertical: (6 * heightP).h,
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                "Top rated near you",
-                                style: TextStyle(
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                              // A small gap between the text and the line
-                              SizedBox(width: (8 * widthP).w),
-                              // Expanded widget to take up remaining space
-                              Expanded(
-                                child: Container(
-                                  // Adjust height/thickness and color as desired
-                                  height: (1.5 * heightP).h,
-                                  color: Colors.grey.shade300,
+                              Positioned(
+                                bottom: 30
+                                    .h, // Adjust for spacing above the bottom edge
+                                left: 0,
+                                right: 0,
+                                child: Center(
+                                  child: SvgPicture.asset(
+                                    'assets/svg/fozo_home.svg',
+                                    height: (65 * heightP),
+                                    width: (40 * widthP),
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                        SizedBox(height: (15 * heightP).h),
-                        SizedBox(
-                          height: (255 * heightP),
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: topRatedRestaurent["restaurants"].length,
+                          SizedBox(height: (6 * heightP).h),
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: (16 * widthP).w,
+                              vertical: (6 * heightP).h,
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "Top rated near you",
+                                  style: TextStyle(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                // A small gap between the text and the line
+                                SizedBox(width: (8 * widthP).w),
+                                // Expanded widget to take up remaining space
+                                Expanded(
+                                  child: Container(
+                                    // Adjust height/thickness and color as desired
+                                    height: (1.5 * heightP).h,
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: (15 * heightP).h),
+                          SizedBox(
+                            height: (255 * heightP),
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: topRatedRestaurentFiltered.length,
+                              itemBuilder: (context, index) {
+                                final item = topRatedRestaurentFiltered[index];
+                                return GestureDetector(
+                                  onTap: () {
+                                    // Navigate to the detail page
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              SurpriseBagDetailPage(
+                                                  restaurantId:
+                                                      topRatedRestaurentFiltered[
+                                                              index]
+                                                          ["restaurantId"],
+                                                  myAddress: addressMessage)
+                                          // If you need to pass data, you can pass `item` or other details here
+                                          ),
+                                    );
+                                  },
+                                  child: _buildHorizontalCard(item),
+                                );
+                              },
+                            ),
+                          ),
+                          // Padding(
+                          //   padding: EdgeInsets.all((16 * widthP).w),
+                          //   child: Stack(
+                          //     children: [
+                          //       // Main Container
+                          //       Container(
+                          //         width: double.infinity,
+                          //         padding: EdgeInsets.all(16.r),
+                          //         decoration: BoxDecoration(
+                          //           color: const Color(
+                          //               0xFFF6FCEB), // Pale greenish
+                          //           borderRadius: BorderRadius.circular(12.r),
+                          //         ),
+                          //         child: Column(
+                          //           crossAxisAlignment:
+                          //               CrossAxisAlignment.start,
+                          //           children: [
+                          //             // Main Promo Text
+                          //             Text(
+                          //               "Flat ₹500 off on first order",
+                          //               style: TextStyle(
+                          //                 fontSize: 16.sp,
+                          //                 fontWeight: FontWeight.bold,
+                          //                 color: Colors.black87,
+                          //               ),
+                          //             ),
+                          //             SizedBox(height: (8 * heightP).h),
+                          //
+                          //             // Row for code + copy icon
+                          //             Row(
+                          //               mainAxisSize: MainAxisSize.min,
+                          //               children: [
+                          //                 Text(
+                          //                   "NEW500",
+                          //                   style: TextStyle(
+                          //                     fontSize: 14.sp,
+                          //                     fontWeight: FontWeight.bold,
+                          //                     color: Colors.black87,
+                          //                   ),
+                          //                 ),
+                          //                 SizedBox(width: (8 * heightP).w),
+                          //
+                          //                 // Copy icon
+                          //                 GestureDetector(
+                          //                   onTap: () async {
+                          //                     // Copy the code to clipboard
+                          //                     await Clipboard.setData(
+                          //                       const ClipboardData(
+                          //                           text: "NEW500"),
+                          //                     );
+                          //
+                          //                     // Optional: Show a small feedback (snackbar)
+                          //                     ScaffoldMessenger.of(context)
+                          //                         .showSnackBar(
+                          //                       const SnackBar(
+                          //                         content: Text(
+                          //                             "Code copied to clipboard"),
+                          //                       ),
+                          //                     );
+                          //                   },
+                          //                   child: Icon(
+                          //                     Icons.copy,
+                          //                     size: 16.sp,
+                          //                     color: Colors.black87,
+                          //                   ),
+                          //                 ),
+                          //               ],
+                          //             ),
+                          //           ],
+                          //         ),
+                          //       ),
+                          //
+                          //       // "fozo" watermark in the bottom-right
+                          //       Positioned(
+                          //         bottom: 0.h,
+                          //         right: 16.w,
+                          //         child: Text(
+                          //           "fozo",
+                          //           style: TextStyle(
+                          //             fontSize: 40.sp,
+                          //             color: Colors.black.withOpacity(0.05),
+                          //             fontWeight: FontWeight.bold,
+                          //           ),
+                          //         ),
+                          //       ),
+                          //     ],
+                          //   ),
+                          // ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 16.w,
+                              vertical: 8.h,
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "All available outlet near you",
+                                  style: TextStyle(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                // A small gap between the text and the line
+                                SizedBox(width: 8.w),
+                                // Expanded widget to take up remaining space
+                                Expanded(
+                                  child: Container(
+                                    // Adjust height/thickness and color as desired
+                                    height: 1.h,
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          ListView.separated(
+                            // Use a shrinkWrap to fit inside SingleChildScrollView
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: availableRestaurentFiltered.length,
+                            separatorBuilder: (_, __) => SizedBox(height: 12.h),
                             itemBuilder: (context, index) {
-                              final item =
-                                  topRatedRestaurent["restaurants"][index];
+                              final item = availableRestaurentFiltered[index];
                               return GestureDetector(
                                 onTap: () {
                                   // Navigate to the detail page
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) =>
-                                            SurpriseBagDetailPage(
-                                                restaurantId:
-                                                    topRatedRestaurent[
-                                                            "restaurants"]
-                                                        [index]["restaurantId"],
-                                                myAddress: addressMessage)
-                                        // If you need to pass data, you can pass `item` or other details here
-                                        ),
+                                      builder: (context) =>
+                                          SurpriseBagDetailPage(
+                                              restaurantId:
+                                                  availableRestaurentFiltered[
+                                                      index]["restaurantId"],
+                                              myAddress: addressMessage),
+                                      // If you need to pass data, you can pass `item` or other details here
+                                    ),
                                   );
                                 },
-                                child: _buildHorizontalCard(item),
+                                child: _buildVerticalCard(item),
                               );
                             },
                           ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all((16 * widthP).w),
-                          child: Stack(
-                            children: [
-                              // Main Container
-                              Container(
-                                width: double.infinity,
-                                padding: EdgeInsets.all(16.r),
-                                decoration: BoxDecoration(
-                                  color:
-                                      const Color(0xFFF6FCEB), // Pale greenish
-                                  borderRadius: BorderRadius.circular(12.r),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // Main Promo Text
-                                    Text(
-                                      "Flat ₹500 off on first order",
-                                      style: TextStyle(
-                                        fontSize: 16.sp,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                    SizedBox(height: (8 * heightP).h),
-
-                                    // Row for code + copy icon
-                                    Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          "NEW500",
-                                          style: TextStyle(
-                                            fontSize: 14.sp,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black87,
-                                          ),
-                                        ),
-                                        SizedBox(width: (8 * heightP).w),
-
-                                        // Copy icon
-                                        GestureDetector(
-                                          onTap: () async {
-                                            // Copy the code to clipboard
-                                            await Clipboard.setData(
-                                              const ClipboardData(
-                                                  text: "NEW500"),
-                                            );
-
-                                            // Optional: Show a small feedback (snackbar)
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
-                                              const SnackBar(
-                                                content: Text(
-                                                    "Code copied to clipboard"),
-                                              ),
-                                            );
-                                          },
-                                          child: Icon(
-                                            Icons.copy,
-                                            size: 16.sp,
-                                            color: Colors.black87,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              // "fozo" watermark in the bottom-right
-                              Positioned(
-                                bottom: 0.h,
-                                right: 16.w,
-                                child: Text(
-                                  "fozo",
-                                  style: TextStyle(
-                                    fontSize: 40.sp,
-                                    color: Colors.black.withOpacity(0.05),
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 16.w,
-                            vertical: 8.h,
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                "All available outlet near you",
-                                style: TextStyle(
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                              // A small gap between the text and the line
-                              SizedBox(width: 8.w),
-                              // Expanded widget to take up remaining space
-                              Expanded(
-                                child: Container(
-                                  // Adjust height/thickness and color as desired
-                                  height: 1.h,
-                                  color: Colors.grey.shade300,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        ListView.separated(
-                          // Use a shrinkWrap to fit inside SingleChildScrollView
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: availableRestaurent["restaurants"].length,
-                          separatorBuilder: (_, __) => SizedBox(height: 12.h),
-                          itemBuilder: (context, index) {
-                            final item =
-                                availableRestaurent["restaurants"][index];
-                            return GestureDetector(
-                              onTap: () {
-                                // Navigate to the detail page
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => SurpriseBagDetailPage(
-                                        restaurantId:
-                                            availableRestaurent["restaurants"]
-                                                [index]["restaurantId"],
-                                        myAddress: addressMessage),
-                                    // If you need to pass data, you can pass `item` or other details here
-                                  ),
-                                );
-                              },
-                              child: _buildVerticalCard(item),
-                            );
-                          },
-                        ),
-                        SizedBox(height: 20.h),
-                      ],
+                          SizedBox(height: 20.h),
+                        ],
+                      ),
                     ),
-                  ),
+        ),
       ),
     );
   }
@@ -711,14 +676,14 @@ class _FozoHomeScreenState extends State<FozoHomeScreen> {
                         // ),
                         child: Row(
                           children: [
-                            Icon(
-                              Icons.star,
-                              color: Colors.green,
-                              size: 12.sp,
+                            SvgPicture.asset(
+                              'assets/svg/rating_123321.svg',
+                              height: (16 * heightP),
+                              width: (16 * widthP),
                             ),
                             SizedBox(width: 2.w),
                             Text(
-                              item["mysteryBagsLeft"].toString(),
+                              item["maxRating"].toString(),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.white,
@@ -969,10 +934,10 @@ class _FozoHomeScreenState extends State<FozoHomeScreen> {
                       ),
                       Row(
                         children: [
-                          Icon(
-                            Icons.star,
-                            color: Colors.green,
-                            size: 14.sp,
+                          SvgPicture.asset(
+                            'assets/svg/rating_123321.svg',
+                            height: (16 * heightP),
+                            width: (16 * widthP),
                           ),
                           SizedBox(width: 4.w),
                           Text(

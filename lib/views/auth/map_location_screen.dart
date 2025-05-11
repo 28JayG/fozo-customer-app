@@ -12,21 +12,11 @@ import 'package:http/http.dart' as http;
 
 import '../../core/constants/colour_constants.dart';
 import '../../utils/helper/shared_preferences_helper.dart';
-import '../../utils/http/api.dart';
-import '../home/home_screen.dart';
+import 'map_location_screen_full_data.dart';
 
 class AddDeliveryLocationScreen extends StatefulWidget {
-  final String phoneNumber; // <-- phone from OTP
-  final String firebaseUid; // <-- user.uid from OTP
-  final String idToken; // <-- user.uid from OTP
-  final String name; // <-- user.uid from OTP
-
   const AddDeliveryLocationScreen({
     super.key,
-    required this.phoneNumber,
-    required this.firebaseUid,
-    required this.idToken,
-    required this.name,
   });
 
   @override
@@ -45,14 +35,29 @@ class _AddDeliveryLocationScreenState extends State<AddDeliveryLocationScreen> {
 // Location & Address states
   LatLng? selectLocation;
   String? selectPlaceAddress;
+  Placemark? place;
 
   Marker? _marker;
+  Map getData = {};
 
   @override
   void initState() {
     super.initState();
-    _setInitialMarker();
-    _getCurrentLocation();
+    _getData();
+  }
+
+  Future<void> _getData() async {
+    // Retrieve the stored user email to check login status
+    String? jsonString = await SharedPreferencesHelper.getString("loginData");
+
+    if (jsonString != null) {
+      setState(() {
+        getData = jsonDecode(jsonString);
+      });
+
+      _setInitialMarker();
+      _getCurrentLocation();
+    }
   }
 
   void _setInitialMarker() {
@@ -99,10 +104,10 @@ class _AddDeliveryLocationScreenState extends State<AddDeliveryLocationScreen> {
       position.longitude,
     );
 
-    Placemark place = placemarks.first;
     setState(() {
+      place = placemarks.first;
       selectPlaceAddress =
-          "${place.street}, ${place.locality}, ${place.postalCode}";
+          "${place?.street}, ${place?.locality}, ${place?.postalCode}";
     });
   }
 
@@ -129,6 +134,15 @@ class _AddDeliveryLocationScreenState extends State<AddDeliveryLocationScreen> {
     // Move camera
     final GoogleMapController controller = await _controller.future;
     controller.animateCamera(CameraUpdate.newLatLng(newPosition));
+
+    // Get human-readable address
+    List<Placemark> placemarks = await placemarkFromCoordinates(
+      lat,
+      lng,
+    );
+
+    place = placemarks.first;
+    setState(() {});
   }
 
   @override
@@ -146,7 +160,7 @@ class _AddDeliveryLocationScreenState extends State<AddDeliveryLocationScreen> {
         ),
         backgroundColor: AppColor.backgroundColor,
         title: Text(
-          "Add delivery location",
+          "Add location",
           style: TextStyle(fontSize: 18.sp),
         ),
         centerTitle: true,
@@ -330,32 +344,44 @@ class _AddDeliveryLocationScreenState extends State<AddDeliveryLocationScreen> {
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                         ),
-                        onPressed: () async {
-                          final res = await ApiService.postRequest(
-                              "auth/register/customer", {
-                            "idToken": widget.idToken,
-                            "fullName": widget.name,
-                            "contactNumber": widget.phoneNumber,
-                            "address": selectPlaceAddress,
-                            "profileImage": "https://example.com/image.jpg"
-                          });
+                        onPressed: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DeliveryLocationDataScreen(
+                                // selectLocation: selectLocation,
+                                selectPlaceAddress: selectPlaceAddress,
+                                place: place,
 
-                          if (res["role"] == "Customer") {
-                            res["user"] = res;
-                            // Convert JSON to string and save
-                            String actionString = jsonEncode(res);
-                            await SharedPreferencesHelper.saveString(
-                                'userLookup',
-                                actionString); // Save a string value
-
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => FozoHomeScreen(),
+                                idToken: getData["idToken"].toString(),
+                                fullName: getData["name"].toString(),
+                                contactNumber:
+                                    getData["phoneNumber"].toString(),
+                                address: selectPlaceAddress.toString(),
                               ),
-                            );
-                          }
+                            ),
+                          );
                         },
+                        child: Text(
+                          "Next",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16.sp,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50.h,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green.shade900,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                        ),
+                        onPressed: () async {},
                         child: Text(
                           "Confirm",
                           style: TextStyle(

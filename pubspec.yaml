@@ -21,13 +21,7 @@ version: 1.0.0+1
 environment:
   sdk: ">=3.4.0 <4.0.0"
 
-flutter_native_splash:
-  color: "#F6FCEB" # Pale green background
-  image: assets/png/fozo_logo.png
-  android: true
-  ios: true
-  android_gravity: center
-  ios_content_mode: center
+
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
 # consider running `flutter pub upgrade --major-versions`. Alternatively,
@@ -44,7 +38,6 @@ dependencies:
   firebase_core: ^3.12.1
   firebase_auth: ^5.5.1
   #Other Packages
-  flutter_native_splash: ^2.4.5
   cached_network_image: ^3.4.1
   provider: ^6.1.2
   flutter_svg: ^2.0.17
@@ -76,6 +69,10 @@ dependencies:
   flutter_rating_bar: ^4.0.1
   carousel_slider: ^5.0.0
   share_plus: ^10.1.4
+  razorpay_flutter: ^1.4.0
+  another_telephony: ^0.4.1
+  lottie: ^3.3.1
+  intl: ^0.20.2
 
 
 dev_dependencies:
@@ -88,6 +85,31 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  flutter_native_splash: ^2.4.6
+  flutter_launcher_icons: ^0.14.3
+
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/png/logo.png"
+  adaptive_icon_foreground: "assets/png/logo.png"
+  adaptive_icon_background: "#F6FCEB"
+
+#flutter_native_splash:
+#  color: "#F6FCEB"  # background color
+#  image: assets/png/logo.png  # your splash logo
+##  branding: assets/branding.png  # optional bottom branding
+#  android_gravity: center
+#  ios_content_mode: center
+#  fullscreen: true
+
+flutter_native_splash:
+  image: "assets/png/logo.png"
+  color: "#F6FCEB"
+  android: true
+  ios: true
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -103,6 +125,7 @@ flutter:
   assets:
     - assets/svg/
     - assets/png/
+    - assets/json/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

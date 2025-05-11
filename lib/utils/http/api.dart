@@ -32,6 +32,10 @@ class ApiService {
       String encodedUrl = Uri.encodeFull('$baseUrl$endpoint');
       final headers = await _getHeaders();
 
+      print(encodedUrl);
+      print(headers);
+      print(data);
+
       final response = await http.post(
         Uri.parse(encodedUrl),
         headers: headers,
@@ -117,6 +121,9 @@ class ApiService {
 
   // Handle Response
   static Map<String, dynamic> _handleResponse(http.Response response) {
+    print(response.statusCode);
+    print(response.body);
+
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return jsonDecode(response.body);
     } else {

@@ -3,6 +3,8 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fozo_customer_app/core/constants/colour_constants.dart';
 
+import '../../utils/http/api.dart';
+
 class PastOrderScreen extends StatefulWidget {
   const PastOrderScreen({super.key});
 
@@ -12,38 +14,25 @@ class PastOrderScreen extends StatefulWidget {
 
 class _PastOrderScreenState extends State<PastOrderScreen> {
   // Sample data to replicate multiple orders
-  final List<Map<String, dynamic>> _orders = const [
-    {
-      "restaurantName": "Barbeque Nation, HSR",
-      "itemInfo": "1 X Surprise Bag",
-      "price": 585,
-      "deliveryAddress": "Creative Residency | 24th Main Rd, IT",
-      "deliveryTime": "10-11 PM",
-      "rating": 4.5,
-      "imageUrl":
-          "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=4299&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // sample image
-    },
-    {
-      "restaurantName": "Barbeque Nation, HSR",
-      "itemInfo": "1 X Surprise Bag",
-      "price": 585,
-      "deliveryAddress": "Creative Residency | 24th Main Rd, IT",
-      "deliveryTime": "10-11 PM",
-      "rating": 4.5,
-      "imageUrl":
-          "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=4299&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    },
-    {
-      "restaurantName": "Barbeque Nation, HSR",
-      "itemInfo": "1 X Surprise Bag",
-      "price": 585,
-      "deliveryAddress": "Creative Residency | 24th Main Rd, IT",
-      "deliveryTime": "10-11 PM",
-      "rating": 4.5,
-      "imageUrl":
-          "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=4299&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    },
-  ];
+
+  List<Map<String, dynamic>> _orders = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    // Fetch data once the widget is initialized
+    getMyData();
+  }
+
+  Future<void> getMyData() async {
+    final resOutlate = await ApiService.getRequest("/order/customer");
+
+    print(resOutlate);
+
+    setState(() {
+      _orders = resOutlate["orders"];
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,13 +66,14 @@ class _PastOrderScreenState extends State<PastOrderScreen> {
   }
 
   Widget _buildOrderCard(Map<String, dynamic> order) {
+    print(order);
+
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
       padding: EdgeInsets.all(12.r),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8.r),
-        // Thin gray border to replicate the screenshot's outline
         border: Border.all(
           color: Colors.grey.shade300,
           width: 1,
@@ -92,22 +82,20 @@ class _PastOrderScreenState extends State<PastOrderScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1) Top row: Restaurant Name + Price
+          // Top Row: Image, Details, Price
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(8.r),
                 child: Image.network(
-                  order["imageUrl"] ?? "https://via.placeholder.com/80",
+                  order["imageUrl"] ?? "https://bit.ly/bifulllogo",
                   width: 60.w,
                   height: 60.h,
                   fit: BoxFit.cover,
                 ),
               ),
               SizedBox(width: 10.w),
-              // Restaurant name
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -120,20 +108,26 @@ class _PastOrderScreenState extends State<PastOrderScreen> {
                         color: Colors.black87,
                       ),
                     ),
-                    Text(
-                      order["itemInfo"] ?? "1 X Surprise Bag",
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        color: Colors.grey.shade700,
-                      ),
+                    // Items loop
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: (order["items"] as List<dynamic>).map((item) {
+                        return Text(
+                          "${item["quantity"]} X Bag of Price ${item["price"]}",
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            color: Colors.grey.shade700,
+                          ),
+                        );
+                      }).toList(),
                     ),
                     SizedBox(height: 8.h),
                   ],
                 ),
               ),
-              // Price on the right
+              // Total Price
               Text(
-                "₹${order["price"] ?? 585}",
+                "₹ ${order["totalAmount"] ?? 0.00}",
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
@@ -142,18 +136,11 @@ class _PastOrderScreenState extends State<PastOrderScreen> {
               ),
             ],
           ),
-          SizedBox(height: 4.h),
-
+          SizedBox(height: 8.h),
+          Divider(color: Colors.grey.shade300),
           SizedBox(height: 8.h),
 
-          // Thin divider
-          Container(
-            height: 1,
-            color: Colors.grey.shade300,
-          ),
-          SizedBox(height: 8.h),
-
-          // 3) Delivery Address row
+          // Delivery Address
           Row(
             children: [
               Icon(
@@ -173,8 +160,6 @@ class _PastOrderScreenState extends State<PastOrderScreen> {
             ],
           ),
           SizedBox(height: 4.h),
-
-          // Actual address
           Text(
             order["deliveryAddress"] ??
                 "Creative Residency | 24th Main Rd, IT...",
@@ -185,7 +170,7 @@ class _PastOrderScreenState extends State<PastOrderScreen> {
           ),
           SizedBox(height: 8.h),
 
-          // 4) Delivered time row
+          // Delivery Time
           Row(
             children: [
               Icon(
@@ -204,16 +189,13 @@ class _PastOrderScreenState extends State<PastOrderScreen> {
             ],
           ),
           SizedBox(height: 8.h),
-          Container(
-            height: 1,
-            color: Colors.grey.shade300,
-          ),
+          Divider(color: Colors.grey.shade300),
           SizedBox(height: 8.h),
-          // 5) Bottom row: "Rate" + rating bar
+
+          // Rating Row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // "Rate" text
               Text(
                 "Rate",
                 style: TextStyle(
@@ -221,8 +203,6 @@ class _PastOrderScreenState extends State<PastOrderScreen> {
                   color: Colors.grey.shade700,
                 ),
               ),
-
-              // RatingBar from flutter_rating_bar
               RatingBar.builder(
                 initialRating: (order["rating"] ?? 0).toDouble(),
                 minRating: 0,
@@ -235,7 +215,7 @@ class _PastOrderScreenState extends State<PastOrderScreen> {
                   color: Colors.green.shade900,
                 ),
                 onRatingUpdate: (rating) {
-                  // TODO: handle rating update logic
+                  // TODO: Handle rating logic
                 },
               ),
             ],

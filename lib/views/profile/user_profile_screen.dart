@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fozo_customer_app/views/profile/map_location_screen_profile_update.dart';
 
 import '../../core/constants/colour_constants.dart';
 import '../../utils/helper/shared_preferences_helper.dart';
@@ -110,24 +111,24 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   ),
                 )),
             SizedBox(height: 30.h),
-            SizedBox(
-              width: double.infinity,
-              height: 50.h,
-              child: ElevatedButton(
-                onPressed: null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey.shade300,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                ),
-                child: Text(
-                  "Update Profile",
-                  style:
-                      TextStyle(fontSize: 16.sp, color: Colors.grey.shade600),
-                ),
-              ),
-            ),
+            // SizedBox(
+            //   width: double.infinity,
+            //   height: 50.h,
+            //   child: ElevatedButton(
+            //     onPressed: null,
+            //     style: ElevatedButton.styleFrom(
+            //       backgroundColor: Colors.grey.shade300,
+            //       shape: RoundedRectangleBorder(
+            //         borderRadius: BorderRadius.circular(8.r),
+            //       ),
+            //     ),
+            //     child: Text(
+            //       "Update Profile",
+            //       style:
+            //           TextStyle(fontSize: 16.sp, color: Colors.grey.shade600),
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ),
@@ -169,7 +170,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             TextStyle(fontSize: 14.sp, color: Colors.black87),
                       ),
               ),
-              (label == "Address" || label == "Name")
+              (label == "Name")
                   ? GestureDetector(
                       onTap: onToggleEdit,
                       child: Text(
@@ -178,7 +179,23 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             fontSize: 14.sp, color: AppColor.buttonColor),
                       ),
                     )
-                  : SizedBox(height: 0, width: 0),
+                  : (label == "Address")
+                      ? GestureDetector(
+                          onTap: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      UpdateDeliveryLocationScreen()),
+                            );
+                          },
+                          child: Text(
+                            isEditing ? "Save" : "Change",
+                            style: TextStyle(
+                                fontSize: 14.sp, color: AppColor.buttonColor),
+                          ),
+                        )
+                      : SizedBox(height: 0, width: 0),
             ],
           ),
         ),

@@ -25,6 +25,7 @@ class _AddressBookScreenState extends State<AddressBookScreen> {
 
   Future<void> _getData() async {
     final resAddress = await ApiService.getRequest("address");
+    print(resAddress);
     _addresses = resAddress["data"];
     setState(() {}); // Refresh the UI if inside a StatefulWidget
   }
