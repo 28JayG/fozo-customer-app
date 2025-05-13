@@ -25,6 +25,8 @@ class _SplashState extends State<Splash> {
   }
 
   Future<void> _getData() async {
+    await Future.delayed(Duration(seconds: 2));
+
     // Retrieve the stored user email to check login status
     String userLookup =
         await SharedPreferencesHelper.getString("userLookup") ?? "";

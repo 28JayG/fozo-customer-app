@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:fozo_customer_app/core/constants/colour_constants.dart';
 
 import '../../utils/http/api.dart';
@@ -15,7 +16,7 @@ class PastOrderScreen extends StatefulWidget {
 class _PastOrderScreenState extends State<PastOrderScreen> {
   // Sample data to replicate multiple orders
 
-  List<Map<String, dynamic>> _orders = const [];
+  List _orders = [];
 
   @override
   void initState() {
@@ -25,12 +26,14 @@ class _PastOrderScreenState extends State<PastOrderScreen> {
   }
 
   Future<void> getMyData() async {
-    final resOutlate = await ApiService.getRequest("/order/customer");
+    final resOutlate = await ApiService.getRequest("order/customer");
 
+    print("resOutlate");
     print(resOutlate);
 
     setState(() {
       _orders = resOutlate["orders"];
+      print(_orders);
     });
   }
 
@@ -173,19 +176,30 @@ class _PastOrderScreenState extends State<PastOrderScreen> {
           // Delivery Time
           Row(
             children: [
-              Icon(
-                Icons.access_time,
-                size: 14.sp,
-                color: Colors.green.shade900,
+              SvgPicture.asset(
+                'assets/svg/timing_ok.svg',
+                height: (16),
+                width: (16),
               ),
               SizedBox(width: 4.w),
-              Text(
-                "Delivered at ${order["deliveryTime"] ?? "10-11 PM"}",
-                style: TextStyle(
-                  fontSize: 13.sp,
-                  color: Colors.grey.shade700,
+              Text.rich(
+                TextSpan(
+                  text: "Delivered at ",
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: Colors.grey.shade700,
+                  ),
+                  children: [
+                    TextSpan(
+                      text: order["deliveryTime"] ?? "10-11 PM",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey.shade700, // same color to match
+                      ),
+                    ),
+                  ],
                 ),
-              ),
+              )
             ],
           ),
           SizedBox(height: 8.h),
@@ -194,7 +208,7 @@ class _PastOrderScreenState extends State<PastOrderScreen> {
 
           // Rating Row
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 "Rate",
@@ -203,9 +217,10 @@ class _PastOrderScreenState extends State<PastOrderScreen> {
                   color: Colors.grey.shade700,
                 ),
               ),
+              SizedBox(width: 10),
               RatingBar.builder(
-                initialRating: (order["rating"] ?? 0).toDouble(),
-                minRating: 0,
+                initialRating: (order["rating"] ?? 3.5).toDouble(),
+                minRating: 2.5,
                 direction: Axis.horizontal,
                 allowHalfRating: false,
                 itemCount: 5,

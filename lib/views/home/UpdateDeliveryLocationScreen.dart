@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:fozo_customer_app/views/profile/user_profile_screen.dart';
 import 'package:geocoding/geocoding.dart';
 // import 'package:fozo_customer_app/core/constants/colour_constants.dart';
 // import 'package:fozo_customer_app/provider/address_provider.dart';
@@ -12,21 +11,18 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 
 import '../../core/constants/colour_constants.dart';
-import '../../utils/http/api.dart';
 import '../../widgets/custom_button_widget.dart';
 
-class UpdateDeliveryLocationScreen extends StatefulWidget {
-  const UpdateDeliveryLocationScreen({
+class UpdateLocationForHome extends StatefulWidget {
+  const UpdateLocationForHome({
     super.key,
   });
 
   @override
-  State<UpdateDeliveryLocationScreen> createState() =>
-      _UpdateDeliveryLocationScreenState();
+  State<UpdateLocationForHome> createState() => _UpdateLocationForHomeState();
 }
 
-class _UpdateDeliveryLocationScreenState
-    extends State<UpdateDeliveryLocationScreen> {
+class _UpdateLocationForHomeState extends State<UpdateLocationForHome> {
   List searchList = [];
 
   final Completer<GoogleMapController> _controller = Completer();
@@ -328,17 +324,8 @@ class _UpdateDeliveryLocationScreenState
                     CustomButton(
                       text: "Confirm",
                       onPressed: () async {
-                        final res =
-                            await ApiService.getRequest("profile/customer");
-
-                        await ApiService.putRequest(
-                            "profile/customer/" + res["customer_id"].toString(),
-                            {"address": selectPlaceAddress});
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const UserProfileScreen()),
-                        );
+                        Navigator.pop(context,
+                            selectPlaceAddress); // Can be any data type
                       },
                     ),
                     SizedBox(height: 8.h),

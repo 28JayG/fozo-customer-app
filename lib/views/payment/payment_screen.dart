@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 // Replace with your actual color constants import
 import 'package:fozo_customer_app/core/constants/colour_constants.dart';
+import 'package:fozo_customer_app/views/payment/payment_complete.dart';
 import 'package:http/http.dart' as http;
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
@@ -65,8 +66,12 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
 
     final res = await ApiService.putRequest("order/successtransaction", option);
 
-    print(res);
-    print({"success1": res});
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const PaymentComplete(),
+      ),
+    );
   }
 
   Future<void> _handlePaymentError(PaymentFailureResponse response) async {

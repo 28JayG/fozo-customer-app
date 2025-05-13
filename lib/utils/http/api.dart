@@ -16,6 +16,9 @@ class ApiService {
       // final headers = await _getHeadersGorGetReq();
       final headers = await _getHeaders();
 
+      print(Uri.parse(encodedUrl));
+      print(headers);
+
       final response = await http.get(Uri.parse(encodedUrl), headers: headers);
       final responseJson = jsonDecode(response.body);
       return _handleResponse(response);

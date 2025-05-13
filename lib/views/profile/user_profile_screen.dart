@@ -111,24 +111,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   ),
                 )),
             SizedBox(height: 30.h),
-            // SizedBox(
-            //   width: double.infinity,
-            //   height: 50.h,
-            //   child: ElevatedButton(
-            //     onPressed: null,
-            //     style: ElevatedButton.styleFrom(
-            //       backgroundColor: Colors.grey.shade300,
-            //       shape: RoundedRectangleBorder(
-            //         borderRadius: BorderRadius.circular(8.r),
-            //       ),
-            //     ),
-            //     child: Text(
-            //       "Update Profile",
-            //       style:
-            //           TextStyle(fontSize: 16.sp, color: Colors.grey.shade600),
-            //     ),
-            //   ),
-            // ),
           ],
         ),
       ),

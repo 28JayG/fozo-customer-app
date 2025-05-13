@@ -14,11 +14,13 @@ import 'cart_screen.dart';
 class SurpriseBagDetailPage extends StatefulWidget {
   final int restaurantId;
   final String myAddress;
+  final Map item;
 
   const SurpriseBagDetailPage({
     super.key,
     required this.restaurantId,
     required this.myAddress,
+    required this.item,
   });
 
   @override
@@ -44,11 +46,14 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
   }
 
   Future<void> getMyData() async {
+    print(widget.item);
+    print("okijiugyth");
+
     final resOutlate = await ApiService.getRequest(
         "Search/Searchmysterybagwithrestaurantid?UserAddress=${widget.myAddress}&Page=1&PageSize=10&RestaurantId=${widget.restaurantId}");
     print("apidata");
-    print(resOutlate);
-    print(resOutlate);
+    // print(resOutlate);
+    // print(resOutlate);
 
     setState(() {
       resData = resOutlate;
@@ -57,6 +62,11 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
           ? resData["restaurants"][0]
           : {};
     });
+
+    print("resResData");
+    print(resResData);
+    print("resResData");
+
     getReviewData(resOutlate);
   }
 
@@ -189,11 +199,7 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: CachedNetworkImage(
-                      imageUrl: resData.isNotEmpty
-                          ? resData["restaurants"].length > 0
-                              ? resData["restaurants"][0]["imageUrl"]
-                              : "https://betazeninfotech.com"
-                          : "https://betazeninfotech.com",
+                      imageUrl: widget.item["imageUrl"],
                       height: 220 * _heightP.h,
                       width: double.infinity,
                       fit: BoxFit.cover,
@@ -215,6 +221,34 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Row(
+                      children: [
+                        if (widget.item["foodType"] == "Both") ...[
+                          SvgPicture.asset(
+                            'assets/svg/veg.svg',
+                            height: 24 * heightP,
+                            width: 24 * widthP,
+                          ),
+                          SvgPicture.asset(
+                            'assets/svg/non-veg.svg',
+                            height: 24 * heightP,
+                            width: 24 * widthP,
+                          ),
+                        ] else if (widget.item["foodType"] == "Veg") ...[
+                          SvgPicture.asset(
+                            'assets/svg/veg.svg',
+                            height: 24 * heightP,
+                            width: 24 * widthP,
+                          ),
+                        ] else ...[
+                          SvgPicture.asset(
+                            'assets/svg/non-veg.svg',
+                            height: 24 * heightP,
+                            width: 24 * widthP,
+                          ),
+                        ]
+                      ],
+                    ),
                     // Title + Rating Row
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -237,10 +271,10 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
                         // Rating + total reviews
                         Row(
                           children: [
-                            Icon(
-                              Icons.star,
-                              color: Colors.green,
-                              size: 16.sp,
+                            SvgPicture.asset(
+                              'assets/svg/rating_123321.svg',
+                              height: (24 * heightP),
+                              width: (24 * widthP),
                             ),
                             SizedBox(width: 4.w),
                             Text(
@@ -250,14 +284,14 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            SizedBox(width: 4.w),
-                            Text(
-                              "(251)",
-                              style: TextStyle(
-                                fontSize: 13.sp,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
+                            // SizedBox(width: 4.w),
+                            // Text(
+                            //   "(251)",
+                            //   style: TextStyle(
+                            //     fontSize: 13.sp,
+                            //     color: Colors.grey.shade600,
+                            //   ),
+                            // ),
                           ],
                         ),
                       ],
@@ -274,90 +308,68 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
                     ),
                     SizedBox(height: 8.h),
 
-                    Text(
-                      "Delivered by ${resResData["deliveredBy"]}",
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        color: Colors.grey.shade800,
-                      ),
-                    ),
-                    SizedBox(width: 10.w),
-
-                    // Delivery row + "5 left" + "0.7kg Co2 save"
                     Row(
                       children: [
+                        Text(
+                          "Delivered by ",
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                        Text(
+                          "${resResData["deliveredBy"]}",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(width: 8),
+
+                        // Badge
                         Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 6.w,
-                            vertical: 3.h,
-                          ),
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(4.r),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black12,
-                                blurRadius: 2.r,
-                              ),
-                            ],
+                            color: Color(0xFF073228),
+                            borderRadius: BorderRadius.circular(10),
                           ),
                           child: Row(
                             children: [
-                              Icon(
-                                Icons.circle,
-                                color: Colors.green,
-                                size: 10.sp,
+                              SvgPicture.asset(
+                                'assets/svg/shopping-1.svg',
+                                height: (16),
+                                width: (16),
                               ),
-                              SizedBox(width: 4.w),
+                              // Icon(Icons.shopping_bag,
+                              //     color: Colors.yellowAccent, size: 16),
+                              SizedBox(width: 4),
                               Text(
                                 "${resResData["mysteryBagsLeft"]} left",
-                                style: TextStyle(
-                                  fontSize: 12.sp,
-                                  color: Colors.black87,
-                                ),
+                                style: TextStyle(color: Colors.white),
                               ),
                             ],
                           ),
                         ),
-                        SizedBox(width: 10.w),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 6.w,
-                            vertical: 3.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(4.r),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black12,
-                                blurRadius: 2.r,
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.eco,
-                                color: Colors.green,
-                                size: 14.sp,
-                              ),
-                              SizedBox(width: 4.w),
-                              Text(
-                                "${resResData["totalCO2Saved"]}kg Co2 save",
-                                style: TextStyle(
-                                  fontSize: 12.sp,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                            ],
-                          ),
+
+                        Spacer(),
+
+                        // CO2 info
+                      ],
+                    ),
+
+                    Row(
+                      children: [
+                        SvgPicture.asset(
+                          'assets/svg/cloud_line-1.svg',
+                          height: (16),
+                          width: (16),
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          "${resResData["totalCO2Saved"]}kg Co2 save",
+                          style: TextStyle(color: Colors.black87),
                         ),
                       ],
                     ),
 
-                    SizedBox(height: 20.h),
-
+                    SizedBox(height: 12),
+                    Divider(color: Colors.grey.shade300, thickness: 1),
+                    SizedBox(height: 12),
                     // "What you could get" Title
                     Text(
                       "What you could get",
@@ -367,7 +379,18 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
                         color: Colors.black87,
                       ),
                     ),
-                    SizedBox(height: 10.h),
+                    SizedBox(height: 5),
+                    // "What you could get" Title
+                    Text(
+                      'Rescue Surprise Bag that may contain north Indian curry, Barbecue tikka, Biriyani or Indian Sweets.',
+                      style: TextStyle(
+                        color: Color(0xFF525866),
+                        fontSize: 12,
+                        fontFamily: 'Inter Display',
+                      ),
+                    ),
+
+                    SizedBox(height: 18),
 
                     ListView.separated(
                       // Use a shrinkWrap to fit inside SingleChildScrollView
@@ -383,207 +406,207 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
 
                     SizedBox(height: 20.h),
 
-                    // Expandable Header: "Look what other people get in Surprise bag"
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _isExpanded = !_isExpanded;
-                        });
-                      },
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Look what other people get in Surprise bag",
-                            style: TextStyle(
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          Icon(
-                            _isExpanded
-                                ? Icons.keyboard_arrow_up
-                                : Icons.keyboard_arrow_down,
-                            size: 20.sp,
-                            color: Colors.black87,
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 10.h),
-
-                    // Conditionally show rating + user review
-                    if (_isExpanded) ...[
-                      // 1. The Container showing the "TOTAL RATING" header and the rating rows
-                      Container(
-                        padding: EdgeInsets.all(12.r),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8.r),
-                          border: Border.all(
-                            color: Colors.grey.shade300,
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // HEADER ROW
-                            Row(
-                              children: [
-                                Text(
-                                  "TOTAL RATING",
-                                  style: TextStyle(
-                                    fontSize: 14.sp,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.grey.shade800,
-                                  ),
-                                ),
-                                const Spacer(),
-                                Icon(
-                                  Icons.star,
-                                  color: const Color(0xFFFFB800),
-                                  size: 14.sp,
-                                ),
-                                SizedBox(width: 4.w),
-                                Text(
-                                  "4.7/5",
-                                  style: TextStyle(
-                                    fontSize: 13.sp,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                SizedBox(width: 4.w),
-                                Text(
-                                  "(251)",
-                                  style: TextStyle(
-                                    fontSize: 13.sp,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 12.h),
-                            // RATING ROWS
-                            _buildRatingRow("Food", 4.5),
-                            SizedBox(height: 8.h),
-                            _buildRatingRow("Value for money", 4.8),
-                            SizedBox(height: 8.h),
-                            _buildRatingRow("Food hygiene", 4.2),
-                          ],
-                        ),
-                      ),
-
-                      // Example user review
-                      Container(
-                        padding: EdgeInsets.all(12.r),
-                        margin: EdgeInsets.symmetric(vertical: 8.h),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8.r),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 2.r,
-                              offset: Offset(0, 1.h),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // User avatar
-                            CircleAvatar(
-                              radius: 24.r,
-                              backgroundColor: Colors.grey.shade200,
-                              child: ClipOval(
-                                child: Image.network(
-                                  "https://via.placeholder.com/150",
-                                  fit: BoxFit.cover,
-                                  width: 48.w,
-                                  height: 48.h,
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: 12.w),
-
-                            // Right side: name, rating, comment, and time
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Top row: name + rating badge
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        "Amit",
-                                        style: TextStyle(
-                                          fontSize: 14.sp,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black87,
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: 6.w,
-                                          vertical: 3.h,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFE9FFF1),
-                                          borderRadius:
-                                              BorderRadius.circular(12.r),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            Icon(
-                                              Icons.star,
-                                              color: Colors.green,
-                                              size: 14.sp,
-                                            ),
-                                            SizedBox(width: 4.w),
-                                            Text(
-                                              "5.0",
-                                              style: TextStyle(
-                                                fontSize: 13.sp,
-                                                color: Colors.black87,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 4.h),
-                                  // Comment text
-                                  Text(
-                                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                                    style: TextStyle(
-                                      fontSize: 13.sp,
-                                      color: Colors.grey.shade700,
-                                    ),
-                                  ),
-                                  SizedBox(height: 8.h),
-                                  // Time stamp
-                                  Text(
-                                    "2 days ago",
-                                    style: TextStyle(
-                                      fontSize: 12.sp,
-                                      color: Colors.grey.shade500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(height: 20.h),
-                    ],
-
-                    SizedBox(height: 40.h),
+                    // // Expandable Header: "Look what other people get in Surprise bag"
+                    // GestureDetector(
+                    //   onTap: () {
+                    //     setState(() {
+                    //       _isExpanded = !_isExpanded;
+                    //     });
+                    //   },
+                    //   child: Row(
+                    //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    //     children: [
+                    //       Text(
+                    //         "Look what other people get in Surprise bag",
+                    //         style: TextStyle(
+                    //           fontSize: 16.sp,
+                    //           fontWeight: FontWeight.bold,
+                    //           color: Colors.black87,
+                    //         ),
+                    //       ),
+                    //       Icon(
+                    //         _isExpanded
+                    //             ? Icons.keyboard_arrow_up
+                    //             : Icons.keyboard_arrow_down,
+                    //         size: 20.sp,
+                    //         color: Colors.black87,
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
+                    // SizedBox(height: 10.h),
+                    //
+                    // // Conditionally show rating + user review
+                    // if (_isExpanded) ...[
+                    //   // 1. The Container showing the "TOTAL RATING" header and the rating rows
+                    //   Container(
+                    //     padding: EdgeInsets.all(12.r),
+                    //     decoration: BoxDecoration(
+                    //       color: Colors.white,
+                    //       borderRadius: BorderRadius.circular(8.r),
+                    //       border: Border.all(
+                    //         color: Colors.grey.shade300,
+                    //       ),
+                    //     ),
+                    //     child: Column(
+                    //       crossAxisAlignment: CrossAxisAlignment.start,
+                    //       children: [
+                    //         // HEADER ROW
+                    //         Row(
+                    //           children: [
+                    //             Text(
+                    //               "TOTAL RATING",
+                    //               style: TextStyle(
+                    //                 fontSize: 14.sp,
+                    //                 fontWeight: FontWeight.bold,
+                    //                 color: Colors.grey.shade800,
+                    //               ),
+                    //             ),
+                    //             const Spacer(),
+                    //             Icon(
+                    //               Icons.star,
+                    //               color: const Color(0xFFFFB800),
+                    //               size: 14.sp,
+                    //             ),
+                    //             SizedBox(width: 4.w),
+                    //             Text(
+                    //               "4.7/5",
+                    //               style: TextStyle(
+                    //                 fontSize: 13.sp,
+                    //                 color: Colors.black87,
+                    //               ),
+                    //             ),
+                    //             SizedBox(width: 4.w),
+                    //             Text(
+                    //               "(251)",
+                    //               style: TextStyle(
+                    //                 fontSize: 13.sp,
+                    //                 color: Colors.grey.shade600,
+                    //               ),
+                    //             ),
+                    //           ],
+                    //         ),
+                    //         SizedBox(height: 12.h),
+                    //         // RATING ROWS
+                    //         _buildRatingRow("Food", 4.5),
+                    //         SizedBox(height: 8.h),
+                    //         _buildRatingRow("Value for money", 4.8),
+                    //         SizedBox(height: 8.h),
+                    //         _buildRatingRow("Food hygiene", 4.2),
+                    //       ],
+                    //     ),
+                    //   ),
+                    //
+                    //   // Example user review
+                    //   Container(
+                    //     padding: EdgeInsets.all(12.r),
+                    //     margin: EdgeInsets.symmetric(vertical: 8.h),
+                    //     decoration: BoxDecoration(
+                    //       color: Colors.white,
+                    //       borderRadius: BorderRadius.circular(8.r),
+                    //       boxShadow: [
+                    //         BoxShadow(
+                    //           color: Colors.black12,
+                    //           blurRadius: 2.r,
+                    //           offset: Offset(0, 1.h),
+                    //         ),
+                    //       ],
+                    //     ),
+                    //     child: Row(
+                    //       crossAxisAlignment: CrossAxisAlignment.start,
+                    //       children: [
+                    //         // User avatar
+                    //         CircleAvatar(
+                    //           radius: 24.r,
+                    //           backgroundColor: Colors.grey.shade200,
+                    //           child: ClipOval(
+                    //             child: Image.network(
+                    //               "https://via.placeholder.com/150",
+                    //               fit: BoxFit.cover,
+                    //               width: 48.w,
+                    //               height: 48.h,
+                    //             ),
+                    //           ),
+                    //         ),
+                    //         SizedBox(width: 12.w),
+                    //
+                    //         // Right side: name, rating, comment, and time
+                    //         Expanded(
+                    //           child: Column(
+                    //             crossAxisAlignment: CrossAxisAlignment.start,
+                    //             children: [
+                    //               // Top row: name + rating badge
+                    //               Row(
+                    //                 mainAxisAlignment:
+                    //                     MainAxisAlignment.spaceBetween,
+                    //                 children: [
+                    //                   Text(
+                    //                     "Amit",
+                    //                     style: TextStyle(
+                    //                       fontSize: 14.sp,
+                    //                       fontWeight: FontWeight.bold,
+                    //                       color: Colors.black87,
+                    //                     ),
+                    //                   ),
+                    //                   Container(
+                    //                     padding: EdgeInsets.symmetric(
+                    //                       horizontal: 6.w,
+                    //                       vertical: 3.h,
+                    //                     ),
+                    //                     decoration: BoxDecoration(
+                    //                       color: const Color(0xFFE9FFF1),
+                    //                       borderRadius:
+                    //                           BorderRadius.circular(12.r),
+                    //                     ),
+                    //                     child: Row(
+                    //                       children: [
+                    //                         Icon(
+                    //                           Icons.star,
+                    //                           color: Colors.green,
+                    //                           size: 14.sp,
+                    //                         ),
+                    //                         SizedBox(width: 4.w),
+                    //                         Text(
+                    //                           "5.0",
+                    //                           style: TextStyle(
+                    //                             fontSize: 13.sp,
+                    //                             color: Colors.black87,
+                    //                           ),
+                    //                         ),
+                    //                       ],
+                    //                     ),
+                    //                   ),
+                    //                 ],
+                    //               ),
+                    //               SizedBox(height: 4.h),
+                    //               // Comment text
+                    //               Text(
+                    //                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                    //                 style: TextStyle(
+                    //                   fontSize: 13.sp,
+                    //                   color: Colors.grey.shade700,
+                    //                 ),
+                    //               ),
+                    //               SizedBox(height: 8.h),
+                    //               // Time stamp
+                    //               Text(
+                    //                 "2 days ago",
+                    //                 style: TextStyle(
+                    //                   fontSize: 12.sp,
+                    //                   color: Colors.grey.shade500,
+                    //                 ),
+                    //               ),
+                    //             ],
+                    //           ),
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   ),
+                    //
+                    //   SizedBox(height: 20.h),
+                    // ],
+                    //
+                    // SizedBox(height: 40.h),
                   ],
                 ),
               ),
@@ -664,7 +687,7 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green.shade900,
+                backgroundColor: Color(0xFF073228),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20.r),
                 ),
@@ -697,17 +720,17 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
     return Container(
       padding: EdgeInsets.all(12.r),
       margin: EdgeInsets.only(bottom: 8.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 2.r,
-            offset: Offset(0, 1.h),
-          ),
-        ],
-      ),
+      // decoration: BoxDecoration(
+      //   color: Colors.white,
+      //   borderRadius: BorderRadius.circular(8.r),
+      //   boxShadow: [
+      //     BoxShadow(
+      //       color: Colors.black12,
+      //       blurRadius: 2.r,
+      //       offset: Offset(0, 1.h),
+      //     ),
+      //   ],
+      // ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -716,8 +739,8 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
             borderRadius: BorderRadius.circular(8.r),
             child: CachedNetworkImage(
               imageUrl: item["imageUrl"] ?? "",
-              width: 60.w,
-              height: 60.h,
+              width: 90,
+              height: 90,
               fit: BoxFit.cover,
               placeholder: (context, url) => Container(
                 color: Colors.grey.shade200,
@@ -788,11 +811,21 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
 
   Widget _buildAddButton(Map<String, dynamic> item) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.green.shade900),
-        borderRadius: BorderRadius.circular(12.r),
+      // padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      // decoration: BoxDecoration(
+      //   border: Border.all(color: Colors.green.shade900),
+      //   borderRadius: BorderRadius.circular(12.r),
+      // ),
+
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      decoration: ShapeDecoration(
+        color: Color(0x38EEFFA8),
+        shape: RoundedRectangleBorder(
+          side: BorderSide(width: 1, color: Color(0xFFD4ED6D)),
+          borderRadius: BorderRadius.circular(17),
+        ),
       ),
+
       child: GestureDetector(
         onTap: () async {
           String userLookup =
@@ -832,10 +865,13 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
 
   Widget _buildQuantitySelector(Map<String, dynamic> item) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.green.shade900),
-        borderRadius: BorderRadius.circular(12.r),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      decoration: ShapeDecoration(
+        color: Color(0x38EEFFA8),
+        shape: RoundedRectangleBorder(
+          side: BorderSide(width: 1, color: Color(0xFFD4ED6D)),
+          borderRadius: BorderRadius.circular(17),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -910,41 +946,71 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
         // Make the sheet wrap its content
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Icon at the top (replace with your bag icon if you have one)
-          Icon(
-            Icons.shopping_bag, // or your custom icon
-            color: Colors.green.shade900,
-            size: 40.sp,
+          Container(
+            height: 4.h,
+            width: 50.w,
+            // color: Colors.black.withOpacity(0.2), // 20% opacity
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(
+                  8.r), // you can change 8.r to your desired radius
+            ),
           ),
           SizedBox(height: 16.h),
 
-          // Title
-          Text(
-            "Your bag will be a surprise",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.grey.shade300,
+                width: 1.w,
+              ),
+              borderRadius: BorderRadius.circular(12.r),
+              color: Colors.white,
+            ),
+            padding: EdgeInsets.all(16.r),
+            child: Padding(
+              padding: EdgeInsets.only(left: 12.r),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment:
+                    CrossAxisAlignment.start, // Align content to the left
+                children: [
+                  SvgPicture.asset(
+                    'assets/svg/shopping.svg',
+                    height: (40),
+                    width: (40),
+                  ),
+                  SizedBox(height: 16.h),
+                  Text(
+                    "Your bag will be a surprise",
+                    textAlign: TextAlign.left,
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    "We wish we could tell you what exactly will be in your Surprise Bag — but it's always a surprise! The store will fill it with a selection of their unsold items.",
+                    textAlign: TextAlign.left,
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          SizedBox(height: 8.h),
 
-          // Description
-          Text(
-            "We wish we could tell you what exactly will be in your Surprise Bag — but it's always a surprise! The store will fill it with a selection of their unsold items.",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 13.sp,
-              color: Colors.grey.shade700,
-            ),
-          ),
-          SizedBox(height: 20.h),
+          SizedBox(height: 16.h),
 
+          // Add: End Border - In a box border, all in one Box -chatgpt, update this
           // "Got It!" button
           SizedBox(
             width: double.infinity,
-            height: 44.h,
+            height: 48.h,
             child: ElevatedButton(
               onPressed: () {
                 // 1. Dismiss bottom sheet
@@ -964,9 +1030,9 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green.shade900,
+                backgroundColor: Color(0xFF073228),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r),
+                  borderRadius: BorderRadius.circular(20.r),
                 ),
               ),
               child: Text(
@@ -979,8 +1045,176 @@ class _SurpriseBagDetailPageState extends State<SurpriseBagDetailPage> {
               ),
             ),
           ),
+
           SizedBox(height: 10.h),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSurpriseSheet3(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.all(16.r),
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Colors.grey.shade300,
+            width: 1.w,
+          ),
+          borderRadius: BorderRadius.circular(12.r),
+          color: Colors.white,
+        ),
+        padding: EdgeInsets.all(16.r),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Icon at the top
+            Icon(
+              Icons.shopping_bag,
+              color: Colors.green.shade900,
+              size: 40.sp,
+            ),
+            SizedBox(height: 16.h),
+
+            // Title
+            Text(
+              "Your bag will be a surprise",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            SizedBox(height: 8.h),
+
+            // Description
+            Text(
+              "We wish we could tell you what exactly will be in your Surprise Bag — but it's always a surprise! The store will fill it with a selection of their unsold items.",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13.sp,
+                color: Colors.grey.shade700,
+              ),
+            ),
+            SizedBox(height: 20.h),
+
+            // "Got It!" button
+            SizedBox(
+              width: double.infinity,
+              height: 44.h,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CheckoutPage(
+                        restaurantId: widget.restaurantId,
+                        myAddress: widget.myAddress,
+                        resData: resData,
+                        myCart: myCart,
+                      ),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green.shade900,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                ),
+                child: Text(
+                  "Got It!",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 10.h),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSurpriseSheet2(BuildContext context) {
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.75, // 75% of screen height
+      child: Padding(
+        padding: EdgeInsets.all(16.r),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // for (int i = 0; i < 15; i++) ...[
+              Icon(
+                Icons.shopping_bag,
+                color: Colors.green.shade900,
+                size: 40.sp,
+              ),
+              SizedBox(height: 16.h),
+              // ],
+              Text(
+                "Your bag will be a surprise",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                "We wish we could tell you what exactly will be in your Surprise Bag — but it's always a surprise! The store will fill it with a selection of their unsold items.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  color: Colors.grey.shade700,
+                ),
+              ),
+              SizedBox(height: 20.h),
+              SizedBox(
+                width: double.infinity,
+                height: 44.h,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CheckoutPage(
+                          restaurantId: widget.restaurantId,
+                          myAddress: widget.myAddress,
+                          resData: resData,
+                          myCart: myCart,
+                        ),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green.shade900,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                  ),
+                  child: Text(
+                    "Got It!",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 10.h),
+            ],
+          ),
+        ),
       ),
     );
   }

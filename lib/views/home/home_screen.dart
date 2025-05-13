@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fozo_customer_app/core/constants/colour_constants.dart';
+import 'package:fozo_customer_app/views/home/UpdateDeliveryLocationScreen.dart';
 import 'package:fozo_customer_app/views/profile/profile_screen.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
@@ -148,16 +149,13 @@ class _FozoHomeScreenState extends State<FozoHomeScreen> {
 
       final resOutlate = await ApiService.getRequest(
           "Search/Searchmysterybagwithoutlet?UserAddress=$address&Page=1&PageSize=10");
-      print("apidata");
-      print(resOutlate);
+
       setState(() {
         availableRestaurent = resOutlate;
       });
 
       final resRatingWise = await ApiService.getRequest(
           "Search/Searchmysterybagratingwise?UserAddress=$address&Page=1&PageSize=10");
-      print("apidata");
-      print(resRatingWise);
 
       setState(() {
         topRatedRestaurent = resRatingWise;
@@ -250,12 +248,71 @@ class _FozoHomeScreenState extends State<FozoHomeScreen> {
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              Text(
-                                                "Current Location",
-                                                style: TextStyle(
-                                                  fontSize: 16.sp,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.black87,
+                                              InkWell(
+                                                onTap: () async {
+                                                  final result =
+                                                      await Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          UpdateLocationForHome(), // Pass data here if needed
+                                                    ),
+                                                  );
+
+                                                  // Handle the returned result
+                                                  if (result != null) {
+                                                    print(
+                                                        "Returned value: $result");
+                                                    // Update state or do something with `result`
+                                                    setState(() {
+                                                      addressMessage = result;
+                                                    });
+
+                                                    final resOutlate =
+                                                        await ApiService.getRequest(
+                                                            "Search/Searchmysterybagwithoutlet?UserAddress=$result&Page=1&PageSize=10");
+
+                                                    setState(() {
+                                                      availableRestaurent =
+                                                          resOutlate;
+                                                    });
+
+                                                    final resRatingWise =
+                                                        await ApiService.getRequest(
+                                                            "Search/Searchmysterybagratingwise?UserAddress=$result&Page=1&PageSize=10");
+
+                                                    setState(() {
+                                                      topRatedRestaurent =
+                                                          resRatingWise;
+                                                    });
+
+                                                    _onSearchChanged();
+                                                  }
+
+                                                  // Your click action here, e.g., open a location picker or show a dialog
+                                                  print(
+                                                      "Current Location tapped");
+                                                },
+                                                child: Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Text(
+                                                      "Current Location",
+                                                      style: TextStyle(
+                                                        fontSize: 16.sp,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.black87,
+                                                      ),
+                                                    ),
+                                                    SizedBox(width: 4.w),
+                                                    Icon(
+                                                      Icons.keyboard_arrow_down,
+                                                      color: Color(0xFF073228),
+                                                      size: 20.sp,
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
                                               SizedBox(height: (4 * heightP).h),
@@ -418,15 +475,16 @@ class _FozoHomeScreenState extends State<FozoHomeScreen> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (context) =>
-                                              SurpriseBagDetailPage(
-                                                  restaurantId:
-                                                      topRatedRestaurentFiltered[
-                                                              index]
-                                                          ["restaurantId"],
-                                                  myAddress: addressMessage)
-                                          // If you need to pass data, you can pass `item` or other details here
-                                          ),
+                                        builder: (context) =>
+                                            SurpriseBagDetailPage(
+                                          restaurantId:
+                                              topRatedRestaurentFiltered[index]
+                                                  ["restaurantId"],
+                                          myAddress: addressMessage,
+                                          item: item,
+                                        ),
+                                        // If you need to pass data, you can pass `item` or other details here
+                                      ),
                                     );
                                   },
                                   child: _buildHorizontalCard(item),
@@ -567,10 +625,12 @@ class _FozoHomeScreenState extends State<FozoHomeScreen> {
                                     MaterialPageRoute(
                                       builder: (context) =>
                                           SurpriseBagDetailPage(
-                                              restaurantId:
-                                                  availableRestaurentFiltered[
-                                                      index]["restaurantId"],
-                                              myAddress: addressMessage),
+                                        restaurantId:
+                                            availableRestaurentFiltered[index]
+                                                ["restaurantId"],
+                                        myAddress: addressMessage,
+                                        item: item,
+                                      ),
                                       // If you need to pass data, you can pass `item` or other details here
                                     ),
                                   );

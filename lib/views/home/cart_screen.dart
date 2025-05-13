@@ -3,12 +3,13 @@ import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-// Replace with your actual color constants import
+import 'package:flutter_svg/svg.dart';
 import 'package:fozo_customer_app/core/constants/colour_constants.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../utils/helper/shared_preferences_helper.dart';
 import '../../utils/http/api.dart';
+import '../../widgets/custom_button_widget.dart';
 import '../payment/payment_screen.dart';
 
 class CheckoutPage extends StatefulWidget {
@@ -39,11 +40,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
   Map _selectAddress = {};
 
   Future<void> _getData() async {
-    print("apidata");
-    print(widget.restaurantId);
-    print(widget.myCart);
-    print(widget.resData);
-
     final resAddress = await ApiService.getRequest("address");
     _addresses = resAddress["data"];
     _selectAddress = _addresses.firstWhere(
@@ -143,7 +139,88 @@ class _CheckoutPageState extends State<CheckoutPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // CO2 Saved Message
+              // // CO2 Saved Message
+              //
+              // Container(
+              //   padding:
+              //       const EdgeInsets.symmetric(horizontal: 90, vertical: 3),
+              //   decoration: BoxDecoration(
+              //     color: Color(0xFFFBFFEC),
+              //     borderRadius: BorderRadius.only(
+              //       bottomLeft: Radius.circular(12),
+              //       bottomRight: Radius.circular(12),
+              //     ),
+              //     boxShadow: [
+              //       BoxShadow(
+              //         color: Color(0x05000000),
+              //         blurRadius: 2,
+              //         offset: Offset(0, 2),
+              //         spreadRadius: 0,
+              //       )
+              //     ],
+              //   ),
+              //   child: Row(
+              //     // mainAxisSize: MainAxisSize.min,
+              //     mainAxisAlignment: MainAxisAlignment.center,
+              //     crossAxisAlignment: CrossAxisAlignment.center,
+              //     children: [
+              //       SvgPicture.asset(
+              //         'assets/svg/cloud_line-1.svg',
+              //         height: (16),
+              //         width: (16),
+              //       ),
+              //       Text.rich(
+              //         TextSpan(
+              //           children: [
+              //             TextSpan(
+              //               text: 'You saved',
+              //               style: TextStyle(
+              //                 color: Color(0xFF055F19),
+              //                 fontSize: 12,
+              //                 fontFamily: 'Inter Display',
+              //                 height: 0,
+              //               ),
+              //             ),
+              //             TextSpan(
+              //               text: ' 0.7kg',
+              //               style: TextStyle(
+              //                 color: Color(0xFF055F19),
+              //                 fontSize: 12,
+              //                 fontFamily: 'Inter Display',
+              //                 fontWeight: FontWeight.bold, // Bold added here
+              //                 height: 0,
+              //               ),
+              //             ),
+              //             TextSpan(
+              //               text: ' Co2',
+              //               style: TextStyle(
+              //                 color: Color(0xFF055F19),
+              //                 fontSize: 12,
+              //                 fontFamily: 'Inter Display',
+              //                 fontWeight: FontWeight.bold, // Bold added here
+              //                 height: 0,
+              //               ),
+              //             ),
+              //             TextSpan(
+              //               text: '  on this order',
+              //               style: TextStyle(
+              //                 color: Color(0xFF055F19),
+              //                 fontSize: 12,
+              //                 fontFamily: 'Inter Display',
+              //                 height: 0,
+              //               ),
+              //             ),
+              //           ],
+              //         ),
+              //       ),
+              //     ],
+              //   ),
+              // ),
+
+              SizedBox(height: 16.h),
+
+              // "Cart" heading
+
               Container(
                 width: double.infinity,
                 padding: EdgeInsets.all(12.r),
@@ -158,38 +235,38 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     ),
                   ],
                 ),
-                child: Text(
-                  "You saved 0.7kg Co2 on this order",
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color: Colors.green.shade900,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Column(
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Cart",
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        Spacer(),
+                      ],
+                    ),
+                    SizedBox(height: 12),
+                    Divider(color: Colors.grey.shade300, thickness: 1),
+                    SizedBox(height: 12),
+                    ListView.separated(
+                      // Use a shrinkWrap to fit inside SingleChildScrollView
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: widget.resData["restaurants"]!.length,
+                      separatorBuilder: (_, __) => SizedBox(height: 12.h),
+                      itemBuilder: (context, index) {
+                        final item = widget.resData["restaurants"][index];
+                        return _buildCartItemRow(item);
+                      },
+                    ),
+                  ],
                 ),
-              ),
-              SizedBox(height: 16.h),
-
-              // "Cart" heading
-              Text(
-                "Cart",
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              SizedBox(height: 10.h),
-
-              ListView.separated(
-                // Use a shrinkWrap to fit inside SingleChildScrollView
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: widget.resData["restaurants"]!.length,
-                separatorBuilder: (_, __) => SizedBox(height: 12.h),
-                itemBuilder: (context, index) {
-                  final item = widget.resData["restaurants"][index];
-                  return _buildCartItemRow(item);
-                },
               ),
 
               SizedBox(height: 20.h),
@@ -400,6 +477,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
                                             },
                                           ),
                                         ),
+                                        CustomButton(
+                                            text: "Add New Address",
+                                            onPressed: () {}),
                                       ],
                                     ),
                                   ),
@@ -419,24 +499,15 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       ],
                     ),
                     SizedBox(height: 6.h),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 200.w,
-                          height: 1.h,
-                          color: Colors.grey.shade300,
-                        ),
-                      ],
-                    ),
+                    Divider(color: Colors.grey.shade300, thickness: 1),
                     SizedBox(height: 6.h),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(
-                          Icons.lock_clock,
-                          color: Colors.green.shade900,
-                          size: 18.sp,
+                        SvgPicture.asset(
+                          'assets/svg/timer-flash-line.svg',
+                          height: (18),
+                          width: (18),
                         ),
                         SizedBox(width: 6.w),
 
@@ -445,22 +516,38 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                "Delivered by 10-11 PM",
-                                style: TextStyle(
-                                  fontSize: 14.sp,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
+                              Text.rich(
+                                TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: "Delivered by ",
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 14,
+                                        fontFamily: 'Inter Display',
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: "10-11 PM",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               SizedBox(height: 8.h),
                               Text(
-                                "You will receive 20 minutes before the delivery time.",
+                                'Will notify you 20 minutes before the delivery time.',
                                 style: TextStyle(
-                                  fontSize: 13.sp,
-                                  color: Colors.black87,
+                                  color: Color(0xFF525866),
+                                  fontSize: 12,
+                                  fontFamily: 'Inter Display',
+                                  height: 0.11,
                                 ),
-                              ),
+                              )
                             ],
                           ),
                         ),
@@ -474,15 +561,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
               SizedBox(height: 20.h),
 
               // Bill Details
-              Text(
-                "Bill Details",
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              SizedBox(height: 8.h),
 
               // Bill details container
               Container(
@@ -501,14 +579,49 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 ),
                 child: Column(
                   children: [
-                    _buildBillRow("Sub total", "₹$totalItemPrice"),
-                    SizedBox(height: 4.h),
-                    _buildBillRow("Delivery charge", "₹$deliveryCharge"),
-                    SizedBox(height: 4.h),
-                    _buildBillRow("Handling charge", "₹$handlingCharge"),
-                    SizedBox(height: 8.h),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Bill Details",
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        Spacer(),
+                        Icon(
+                          Icons.keyboard_arrow_down,
+                          color: Colors.black,
+                          size: 18.sp,
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(height: 12),
                     Divider(color: Colors.grey.shade300, thickness: 1),
-                    SizedBox(height: 8.h),
+                    SizedBox(height: 12),
+                    _buildBillRow(
+                      "Sub total",
+                      "₹$totalItemPrice",
+                      isBold: true,
+                    ),
+                    SizedBox(height: 4.h),
+                    _buildBillRow(
+                      "Delivery charge",
+                      "₹$deliveryCharge",
+                      isBold: true,
+                    ),
+                    SizedBox(height: 4.h),
+                    _buildBillRow(
+                      "Handling charge",
+                      "₹$handlingCharge",
+                      isBold: true,
+                    ),
+                    SizedBox(height: 4.h),
+                    // Divider(color: Colors.grey.shade300, thickness: 1),
+                    // SizedBox(height: 8.h),
                     _buildBillRow(
                       "Grand total",
                       "₹${totalItemPrice + deliveryCharge + handlingCharge}",
@@ -582,7 +695,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     return;
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green.shade900,
+                    backgroundColor: Color(0xFF073228),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20.r),
                     ),
@@ -597,6 +710,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   ),
                 ),
               ),
+
               SizedBox(height: 20.h),
             ],
           ),
@@ -615,7 +729,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
           style: TextStyle(
             fontSize: 13.sp,
             color: Colors.black87,
-            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+            fontWeight: FontWeight.normal,
           ),
         ),
         Text(
@@ -642,20 +756,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
       );
     }
 
+    print(item);
+    print("itemitemitem");
+
     return Container(
-      padding: EdgeInsets.all(12.r),
-      margin: EdgeInsets.only(bottom: 8.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 2.r,
-            offset: Offset(0, 1.h),
-          ),
-        ],
-      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -664,8 +768,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
             borderRadius: BorderRadius.circular(8.r),
             child: CachedNetworkImage(
               imageUrl: item["imageUrl"],
-              width: 60.w,
-              height: 60.h,
+              width: 90,
+              height: 90,
               fit: BoxFit.cover,
               placeholder: (context, url) => Container(
                 color: Colors.grey.shade200,
@@ -682,43 +786,82 @@ class _CheckoutPageState extends State<CheckoutPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // The screenshot shows "Barbeque Nation, HSR" as the main line
-                // then "Medium Surprise Bag" below. You can store these
-                // in your BagItem or you can combine them. For demonstration,
-                // let's show bagItem.title on top and bagItem.description below.
+                Row(
+                  children: [
+                    if (item["foodType"] == "Both") ...[
+                      SvgPicture.asset(
+                        'assets/svg/veg.svg',
+                        height: 16,
+                        width: 16,
+                      ),
+                      SvgPicture.asset(
+                        'assets/svg/non-veg.svg',
+                        height: 16,
+                        width: 16,
+                      ),
+                    ] else if (item["foodType"] == "Veg") ...[
+                      SvgPicture.asset(
+                        'assets/svg/veg.svg',
+                        height: 16,
+                        width: 16,
+                      ),
+                    ] else ...[
+                      SvgPicture.asset(
+                        'assets/svg/non-veg.svg',
+                        height: 16,
+                        width: 16,
+                      ),
+                    ]
+                  ],
+                ),
                 Text(
                   item["packsize"] ?? "",
                   style: TextStyle(
-                    fontSize: 14.sp,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 4.h),
                 Text(
                   item["description"] ?? "",
                   style: TextStyle(
-                    fontSize: 12.sp,
+                    fontSize: 12,
                     color: Colors.grey.shade700,
                   ),
                 ),
-                SizedBox(height: 4.h),
-                Text(
-                  "₹${item["discountedPrice"]} worth ₹${item["originalPrice"]}",
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    color: Colors.black87,
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: "₹${item["discountedPrice"]}",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13.sp,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      TextSpan(
+                        text: " worth ₹${item["originalPrice"]}",
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
+                )
               ],
             ),
           ),
 
           // Quantity selector
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.green.shade900),
-              borderRadius: BorderRadius.circular(12.r),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            decoration: ShapeDecoration(
+              color: Color(0x38EEFFA8),
+              shape: RoundedRectangleBorder(
+                side: BorderSide(width: 1, color: Color(0xFFD4ED6D)),
+                borderRadius: BorderRadius.circular(17),
+              ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,

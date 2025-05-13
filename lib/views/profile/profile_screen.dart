@@ -65,16 +65,22 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> {
               child: Row(
                 children: [
                   // 1) Circle Avatar
-                  CircleAvatar(
-                    radius: 28.r,
-                    backgroundColor: Colors.grey.shade300,
-                    backgroundImage: NetworkImage(
-                      "https://via.placeholder.com/150",
-                    ), // Replace with actual image
+                  // CircleAvatar(
+                  //   radius: 28.r,
+                  //   backgroundColor: Colors.grey.shade300,
+                  //   backgroundImage: NetworkImage(
+                  //     "https://via.placeholder.com/150",
+                  //   ), // Replace with actual image
+                  // ),
+
+                  Icon(
+                    Icons.person,
+                    color: Colors.grey.shade900,
+                    size: 28,
                   ),
+
                   SizedBox(width: 12.w),
 
-                  // 2) Name + Co2 row
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

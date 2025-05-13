@@ -7,6 +7,7 @@ import 'package:fozo_customer_app/views/auth/map_location_screen.dart';
 
 import '../../utils/helper/shared_preferences_helper.dart';
 import '../../utils/permission/permissions.dart';
+import '../../widgets/custom_button_widget.dart';
 import 'login_screen.dart';
 
 class InformationScreen extends StatefulWidget {
@@ -147,10 +148,11 @@ class _InformationScreenState extends State<InformationScreen> {
                 "What should we call you?",
                 style: TextStyle(
                   fontSize: 16.sp,
-                  color: Colors.black87,
+                  color: Color(0xFF073228), // Updated color
                 ),
               ),
             ),
+
             SizedBox(height: 8.h),
 
             /// Name TextField
@@ -158,7 +160,14 @@ class _InformationScreenState extends State<InformationScreen> {
               controller: _nameController,
               decoration: InputDecoration(
                 hintText: "James Brown",
-                prefixIcon: Icon(Icons.person_outline, size: 24.sp),
+                hintStyle: TextStyle(
+                  color: Color(0xFF99A0AD),
+                ),
+                prefixIcon: Icon(
+                  Icons.person_outline,
+                  size: 24.sp,
+                  color: Color(0xFF99A0AD), // directly set icon color
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
                 ),
@@ -177,32 +186,16 @@ class _InformationScreenState extends State<InformationScreen> {
             const Spacer(),
 
             /// Continue Button
-            SizedBox(
-              width: double.infinity,
-              height: 56.h,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green.shade900,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                ),
-                onPressed: _isLoading
-                    ? null
-                    : () {
-                        _saveUserInfo(); // call the API to store info
-                      },
-                child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : Text(
-                        "Continue",
-                        style: TextStyle(
-                          fontSize: 18.sp,
-                          color: Colors.white,
-                        ),
-                      ),
-              ),
+            CustomButton(
+              text: "Continue",
+              onPressed: () {
+                // Minimal check: phone length should be 10
+                if (!_isLoading) {
+                  _saveUserInfo(); // call the API to store info
+                }
+              },
             ),
+
             SizedBox(height: 24.h),
           ],
         ),
